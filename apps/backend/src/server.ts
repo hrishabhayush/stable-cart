@@ -2,9 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import { Database } from 'sqlite3';
 import { initializeDatabase } from './database';
+import { giftCodeRoutes, setGiftCodeService } from './routes/admin/giftCodes';
+import { GiftCodeInventoryService } from './services/GiftCodeInventoryService';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 65535;
 
 // Middleware
 app.use(cors());
@@ -18,7 +20,18 @@ const db = new Database('./stablecart.db');
 async function startServer() {
   try {
     await initializeDatabase(db);
+    console.log('✅ Database initialized, creating service...');
     
+    // Initialize the gift code service with our database
+    const giftCodeService = new GiftCodeInventoryService(db);
+    console.log('✅ Service created, setting service...');
+    setGiftCodeService(giftCodeService);
+    console.log('✅ Service set, adding routes...');
+    
+    // Admin routes
+    app.use('/api/admin/gift-codes', giftCodeRoutes);
+    console.log('✅ Routes added, setting up endpoints...');
+
     // Health check endpoint
     app.get('/api/health', (req, res) => {
       res.json({ 
@@ -53,3 +66,4 @@ async function startServer() {
 startServer();
 
 export { app, db };
+
