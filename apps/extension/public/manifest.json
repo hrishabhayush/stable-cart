@@ -33,9 +33,7 @@
     "48": "icons/amazon.svg",
     "128": "icons/amazon.svg"
   },
-  "background": {
-    "service_worker": "background.js"
-  },
+
   "action": {
     "default_title": "Amazon Crypto Checkout",
     "default_popup": "popup.html"
