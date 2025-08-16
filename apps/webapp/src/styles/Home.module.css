@@ -215,8 +215,17 @@
   font-size: 8px;
   line-height: 1.197;
   color: rgba(0, 0, 0, 0.5);
-  margin-bottom: 12px;
+  margin-bottom: 4px;
+  margin-top: 4px;
   text-align: left;
+}
+
+/* Section Separator Lines */
+.sectionSeparator {
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.15);
+  margin: 12px 0;
+  width: 100%;
 }
 
 /* Connection Info Footer */
@@ -335,8 +344,8 @@
 .paymentButtonContainer {
   position: absolute;
   bottom: 20px;
-  left: 20px;
-  right: 20px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Transaction Status Display */
@@ -391,42 +400,7 @@
   margin-right: auto;
 }
 
-/* Price Display Section */
-.priceDisplay {
-  margin-bottom: 20px;
-  padding: 15px;
-  background: #f0f9ff;
-  border: 1px solid #0ea5e9;
-  border-radius: 8px;
-  font-size: 16px;
-  text-align: center;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-}
 
-.priceTitle {
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #0c4a6e;
-}
-
-.priceDetails {
-  color: #0c4a6e;
-  line-height: 1.6;
-}
-
-.ethPrice {
-  font-size: 14px;
-  margin-top: 8px;
-  opacity: 0.8;
-}
-
-.lastUpdated {
-  font-size: 12px;
-  margin-top: 5px;
-  opacity: 0.6;
-}
 
 /* Responsive adjustments */
 @media (max-width: 450px) {

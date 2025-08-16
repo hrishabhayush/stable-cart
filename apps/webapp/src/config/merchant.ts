@@ -1,6 +1,6 @@
 // Merchant Configuration
 export const MERCHANT_CONFIG = {
-  // Your merchant wallet address - replace with your actual wallet address
+  // Sepolia testnet merchant wallet address
   WALLET_ADDRESS: '0xD880E96C35B217B9E220B69234A12AcFC175f92B' as `0x${string}`,
   
   // Network configuration
