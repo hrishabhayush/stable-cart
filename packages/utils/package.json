@@ -1,0 +1,16 @@
+{
+  "name": "@amazon-crypto-checkout/utils",
+  "version": "1.0.0",
+  "description": "Utility functions for Amazon Crypto Checkout extension",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+} 

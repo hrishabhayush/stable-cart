@@ -1,0 +1,28 @@
+{
+  "name": "amazon-crypto-checkout",
+  "version": "1.0.0",
+  "description": "Adds crypto checkout option to Amazon checkout pages",
+  "main": "dist/content.js",
+  "scripts": {
+    "dev": "webpack --mode development --watch",
+    "build": "webpack --mode production",
+    "clean": "rm -rf dist",
+    "lint": "eslint src/**/*.{js,ts}",
+    "type-check": "tsc --noEmit",
+    "package": "pnpm run build && cd dist && zip -r ../amazon-crypto-checkout.zip ."
+  },
+  "dependencies": {
+    "@amazon-crypto-checkout/ui": "workspace:*",
+    "@amazon-crypto-checkout/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.260",
+    "typescript": "^5.3.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "ts-loader": "^9.5.1",
+    "copy-webpack-plugin": "^11.0.0",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0"
+  }
+} 

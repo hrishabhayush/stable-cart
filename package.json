@@ -1,0 +1,27 @@
+{
+  "name": "amazon-crypto-checkout-workspace",
+  "version": "1.0.0",
+  "description": "Amazon Crypto Checkout Extension - Monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter amazon-crypto-checkout run dev",
+    "build": "pnpm --filter amazon-crypto-checkout run build",
+    "build:all": "pnpm -r run build",
+    "clean": "pnpm -r run clean",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test",
+    "type-check": "pnpm -r run type-check"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.260",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+} 
