@@ -8,16 +8,6 @@ export const MERCHANT_CONFIG = {
     CHAIN_ID: 11155111, // Sepolia testnet
     NAME: 'Sepolia Testnet',
     EXPLORER_URL: 'https://sepolia.etherscan.io'
-  },
-  
-  // Payment settings
-  PAYMENT: {
-    CURRENCY: 'ETH',
-    DECIMALS: 18,
-    PRICE_CURRENCY: 'USD', // Amazon prices are in USD
-    ETH_PRICE_USD: 3000, // Fallback ETH price in USD (will be updated dynamically)
-    MIN_ETH_AMOUNT: 0.001, // Minimum ETH amount to accept
-    MAX_ETH_AMOUNT: 10 // Maximum ETH amount to accept
   }
 };
 
@@ -29,9 +19,4 @@ export const getMerchantAddress = (): `0x${string}` => {
 // Helper function to get network info
 export const getNetworkInfo = () => {
   return MERCHANT_CONFIG.NETWORK;
-};
-
-// Helper function to get payment settings
-export const getPaymentSettings = () => {
-  return MERCHANT_CONFIG.PAYMENT;
 }; 

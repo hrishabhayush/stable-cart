@@ -383,7 +383,6 @@ const CryptoCheckoutPopup: React.FC = () => {
           {connectionStatus}
         </div>
       )} */}
-
       {/* Proceed to Payment Button */}
       <button 
         style={getButtonStyle()}
