@@ -78,14 +78,15 @@ export class PaymentModal {
     const modalContent = document.createElement('div');
     modalContent.style.cssText = `
       background: white;
-      border-radius: 12px;
+      border-radius: 20px;
       padding: 0;
-      max-width: 400px;
+      max-width: 480px;
       width: 90%;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
       position: relative;
+      border: 1px solid #f1f5f9;
     `;
 
     modalContent.innerHTML = this.getModalHTML();
@@ -112,21 +113,21 @@ export class PaymentModal {
     const connection = coinbaseWallet.getConnection();
     
     return `
-      <div style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
+      <div style="padding: 32px; border-bottom: 1px solid #f1f5f9;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: #111827;">Pay with Crypto</h2>
-          <button id="close-modal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+          <h2 style="margin: 0; font-size: 24px; font-weight: 700; color: #0f172a;">Crypto Checkout</h2>
+          <button id="close-modal" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; padding: 8px; border-radius: 50%; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='transparent'">&times;</button>
         </div>
       </div>
 
-      <div style="padding: 24px;">
+      <div style="padding: 32px;">
         <!-- Product Info -->
-        <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            ${this.productInfo?.image ? `<img src="${this.productInfo.image}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;" />` : ''}
+        <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 16px; padding: 24px; margin-bottom: 32px; border: 1px solid #e2e8f0;">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            ${this.productInfo?.image ? `<img src="${this.productInfo.image}" style="width: 72px; height: 72px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);" />` : '<div style="width: 72px; height: 72px; background: #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center;"><span style="font-size: 24px;">📦</span></div>'}
             <div style="flex: 1;">
-              <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #111827;">${this.productInfo?.title || 'Amazon Purchase'}</h3>
-              <p style="margin: 0; font-size: 18px; font-weight: 700; color: #059669;">$${this.productInfo?.price.toFixed(2)} USDC</p>
+              <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #0f172a; line-height: 1.4;">${this.productInfo?.title || 'Amazon Purchase'}</h3>
+              <p style="margin: 0; font-size: 24px; font-weight: 800; color: #059669; background: linear-gradient(135deg, #059669 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$${this.productInfo?.price.toFixed(2)} USDC</p>
             </div>
           </div>
         </div>
@@ -138,30 +139,31 @@ export class PaymentModal {
 
         <!-- Payment Section -->
         <div id="payment-section" style="display: ${connection ? 'block' : 'none'};">
-          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 20px;">
+          <div style="border-top: 1px solid #f1f5f9; padding-top: 24px; margin-top: 24px;">
             <button id="pay-button" style="
               width: 100%;
-              background: #1d4ed8;
+              background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
               color: white;
               border: none;
-              border-radius: 8px;
-              padding: 12px 16px;
+              border-radius: 12px;
+              padding: 16px 24px;
               font-size: 16px;
               font-weight: 600;
               cursor: pointer;
-              transition: background-color 0.2s;
-            " onmouseover="this.style.backgroundColor='#1e40af'" onmouseout="this.style.backgroundColor='#1d4ed8'">
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 12px -1px rgba(59, 130, 246, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(59, 130, 246, 0.3)'">
               Pay $${this.productInfo?.price.toFixed(2)} USDC
             </button>
             
-            <p style="margin-top: 12px; font-size: 12px; color: #6b7280; text-align: center;">
+            <p style="margin-top: 16px; font-size: 13px; color: #64748b; text-align: center; line-height: 1.5;">
               Payment will be sent to merchant wallet on Base network
             </p>
           </div>
         </div>
 
         <!-- Status Section -->
-        <div id="status-section" style="display: none; text-align: center; padding: 20px;">
+        <div id="status-section" style="display: none; text-align: center; padding: 24px;">
           <div id="status-content"></div>
         </div>
       </div>
@@ -173,21 +175,21 @@ export class PaymentModal {
    */
   private getConnectedWalletHTML(connection: any): string {
     return `
-      <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 8px; padding: 16px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 32px; height: 32px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-            <span style="color: white; font-weight: bold;">₿</span>
+      <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #10b981; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);">
+            <span style="color: white; font-weight: bold; font-size: 20px;">₿</span>
           </div>
           <div style="flex: 1;">
-            <p style="margin: 0; font-size: 14px; font-weight: 600; color: #065f46;">Coinbase Wallet Connected</p>
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: #047857;">${coinbaseWallet.formatAddress(connection.address)}</p>
+            <p style="margin: 0; font-size: 16px; font-weight: 700; color: #065f46;">Coinbase Wallet Connected</p>
+            <p style="margin: 6px 0 0 0; font-size: 13px; color: #047857; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;">${coinbaseWallet.formatAddress(connection.address)}</p>
           </div>
-          <button id="disconnect-wallet" style="background: none; border: 1px solid #10b981; color: #10b981; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer;">
+          <button id="disconnect-wallet" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #065f46; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'">
             Disconnect
           </button>
         </div>
-        <div id="balance-info" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #a7f3d0;">
-          <p style="margin: 0; font-size: 12px; color: #047857;">USDC Balance: <span id="usdc-balance">Loading...</span></p>
+        <div id="balance-info" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #a7f3d0;">
+          <p style="margin: 0; font-size: 14px; color: #047857; font-weight: 600;">USDC Balance: <span id="usdc-balance" style="color: #065f46;">Loading...</span></p>
         </div>
       </div>
     `;
@@ -198,35 +200,36 @@ export class PaymentModal {
    */
   private getDisconnectedWalletHTML(): string {
     return `
-      <div style="text-align: center;">
-        <div style="width: 80px; height: 80px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-          <span style="font-size: 32px;">👛</span>
+      <div style="text-align: center; padding: 32px 24px;">
+        <div style="width: 96px; height: 96px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          <span style="font-size: 40px;">👛</span>
         </div>
-        <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #111827;">Connect Your Wallet</h3>
-        <p style="margin: 0 0 20px 0; font-size: 14px; color: #6b7280;">Connect your Coinbase Wallet to pay with USDC on Base network</p>
+        <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 700; color: #0f172a;">Connect Your Wallet</h3>
+        <p style="margin: 0 0 32px 0; font-size: 15px; color: #64748b; line-height: 1.5; max-width: 280px; margin-left: auto; margin-right: auto;">Connect your Coinbase Wallet to pay with USDC on Base network</p>
         
         <button id="connect-wallet" style="
           width: 100%;
-          background: #0052ff;
+          background: linear-gradient(135deg, #0052ff 0%, #0040cc 100%);
           color: white;
           border: none;
-          border-radius: 8px;
-          padding: 12px 16px;
+          border-radius: 12px;
+          padding: 16px 24px;
           font-size: 16px;
           font-weight: 600;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
-          transition: background-color 0.2s;
-        " onmouseover="this.style.backgroundColor='#0040cc'" onmouseout="this.style.backgroundColor='#0052ff'">
-          <span>🔵</span>
+          gap: 12px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px -1px rgba(0, 82, 255, 0.3);
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 12px -1px rgba(0, 82, 255, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 82, 255, 0.3)'">
+          <span style="font-size: 20px;">🔵</span>
           Connect Coinbase Wallet
         </button>
         
-        <p style="margin-top: 12px; font-size: 12px; color: #6b7280;">
-          Don't have Coinbase Wallet? <a href="https://www.coinbase.com/wallet" target="_blank" style="color: #0052ff;">Download here</a>
+        <p style="margin-top: 20px; font-size: 13px; color: #64748b; line-height: 1.5;">
+          Don't have Coinbase Wallet? <a href="https://www.coinbase.com/wallet" target="_blank" style="color: #0052ff; text-decoration: none; font-weight: 600;">Download here</a>
         </p>
       </div>
     `;

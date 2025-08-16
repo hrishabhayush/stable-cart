@@ -73,11 +73,204 @@ import { paymentModal } from './payment-modal';
     handleCryptoCheckout(): void {
       console.log('Crypto checkout initiated');
       
-      // Extract product information from Amazon page
-      const productInfo = this.extractProductInfo();
+      try {
+        // Extract product information from Amazon page
+        const productInfo = this.extractProductInfo();
+        console.log('Product info extracted:', productInfo);
+        
+        // Open extension popup instead of modal
+        this.openExtensionPopup(productInfo);
+      } catch (error) {
+        console.error('Error in handleCryptoCheckout:', error);
+      }
+    },
+
+    // Open extension popup interface
+    openExtensionPopup(productInfo: any): void {
+      console.log('Opening extension popup...');
       
-      // Show payment modal
-      paymentModal.show(productInfo);
+      // Store product info in localStorage so popup can access it
+      localStorage.setItem('stablecart_product_info', JSON.stringify(productInfo));
+      
+      // Add loading state to checkout buttons
+      this.setCheckoutButtonsLoadingState(true);
+      
+      // Start monitoring popup state
+      this.startPopupMonitoring();
+      
+      // Send message to background script to open popup
+      if (chrome && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({
+          action: 'openPopup',
+          productInfo: productInfo
+        });
+      } else {
+        console.log('Chrome runtime not available, opening popup manually');
+        // Fallback: open popup in new window if chrome runtime not available
+        this.openPopupInNewWindow(productInfo);
+      }
+    },
+
+    // Start monitoring popup state
+    startPopupMonitoring(): void {
+      // Check if popup is still open every 200ms
+      const checkInterval = setInterval(() => {
+        // Check if popup is still open
+        const isPopupOpen = this.isPopupOpen();
+        
+        if (!isPopupOpen) {
+          // Popup is closed, restore button state and stop monitoring
+          this.setCheckoutButtonsLoadingState(false);
+          clearInterval(checkInterval);
+        }
+      }, 200);
+      
+      // Store the interval ID to clear it if needed
+      (window as any).popupCheckInterval = checkInterval;
+    },
+
+    // Check if popup is currently open
+    isPopupOpen(): boolean {
+      // Check for various popup indicators
+      const popupSelectors = [
+        '[data-testid="popup"]',
+        '.popup',
+        '[role="dialog"]',
+        '[id*="popup"]',
+        '[class*="popup"]'
+      ];
+      
+      for (const selector of popupSelectors) {
+        const elements = document.querySelectorAll(selector);
+        for (let i = 0; i < elements.length; i++) {
+          const el = elements[i];
+          const style = window.getComputedStyle(el);
+          if (style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0') {
+            return true;
+          }
+        }
+      }
+      
+      return false;
+    },
+
+    // Set checkout buttons loading state
+    setCheckoutButtonsLoadingState(isLoading: boolean): void {
+      const buttons = [
+        document.getElementById('amazon-crypto-checkout-button'),
+        document.getElementById('amazon-crypto-checkout-button-2')
+      ];
+      
+      buttons.forEach(button => {
+        if (button) {
+          if (isLoading) {
+            // Add loading state
+            button.style.opacity = '0.6';
+            button.style.cursor = 'not-allowed';
+            (button as HTMLButtonElement).disabled = true;
+            
+            // Add animated dots
+            const originalText = button.textContent;
+            button.setAttribute('data-original-text', originalText || '');
+            button.innerHTML = '<span class="loading-dots">...</span>';
+            
+            // Add CSS for animated dots
+            if (!document.getElementById('loading-dots-style')) {
+              const style = document.createElement('style');
+              style.id = 'loading-dots-style';
+              style.textContent = `
+                .loading-dots {
+                  display: inline-block;
+                  font-size: 16px;
+                  letter-spacing: 2px;
+                }
+                
+                .loading-dots::after {
+                  content: '...';
+                  animation: loadingDots 2s ease-in-out infinite;
+                  display: inline-block;
+                }
+                
+                @keyframes loadingDots {
+                  0%, 100% {
+                    transform: translateY(0px);
+                  }
+                  25% {
+                    transform: translateY(-4px);
+                  }
+                  50% {
+                    transform: translateY(0px);
+                  }
+                  75% {
+                    transform: translateY(4px);
+                  }
+                }
+              `;
+              document.head.appendChild(style);
+            }
+          } else {
+            // Restore normal state
+            button.style.opacity = '1';
+            button.style.cursor = 'pointer';
+            (button as HTMLButtonElement).disabled = false;
+            
+            // Restore original text
+            const originalText = button.getAttribute('data-original-text');
+            if (originalText) {
+              button.textContent = originalText;
+            }
+          }
+        }
+      });
+    },
+
+    // Check if popup is open and restore button state if closed
+    checkPopupState(): void {
+      // Listen for popup close events
+      const checkPopupClosed = () => {
+        // Check if popup is still open by looking for popup elements
+        const popupElements = document.querySelectorAll('[id*="popup"], [class*="popup"]');
+        const isPopupOpen = Array.from(popupElements).some(el => {
+          const computedStyle = window.getComputedStyle(el);
+          return computedStyle.display !== 'none' && 
+                 computedStyle.visibility !== 'hidden' &&
+                 computedStyle.opacity !== '0';
+        });
+        
+        // Also check if the extension popup is still open
+        const extensionPopup = document.querySelector('[data-testid="popup"], .popup, [role="dialog"]');
+        const isExtensionPopupOpen = extensionPopup && 
+                                   window.getComputedStyle(extensionPopup).display !== 'none';
+        
+        if (!isPopupOpen && !isExtensionPopupOpen) {
+          // Popup is closed, restore button state
+          this.setCheckoutButtonsLoadingState(false);
+          return; // Stop checking
+        }
+        
+        // Continue checking
+        setTimeout(checkPopupClosed, 300);
+      };
+      
+      // Start checking after a short delay
+      setTimeout(checkPopupClosed, 500);
+    },
+
+    // Fallback: open popup in new window
+    openPopupInNewWindow(productInfo: any): void {
+      const popupUrl = chrome.runtime.getURL('popup.html');
+      const popupWindow = window.open(
+        popupUrl,
+        'stablecart_popup',
+        'width=400,height=600,scrollbars=yes,resizable=yes'
+      );
+      
+      if (popupWindow) {
+        // Focus the popup window
+        popupWindow.focus();
+      } else {
+        console.error('Failed to open popup window');
+      }
     },
 
     // Extract product information from current Amazon page
@@ -456,11 +649,46 @@ import { paymentModal } from './payment-modal';
       setTimeout(() => {
         this.injectCryptoWalletOption();
         this.injectCheckoutButton();
-        this.injectSecondCheckoutButton(); // Added this line
+        this.injectSecondCheckoutButton();
       }, 1000);
 
       // Watch for dynamic content changes
       this.observePageChanges();
+      
+      // Listen for popup state changes
+      this.listenForPopupStateChanges();
+    },
+
+    // Listen for popup state changes via storage
+    listenForPopupStateChanges(): void {
+      // Listen for changes in localStorage to detect popup close
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'stablecart_popup_closed') {
+          // Popup was closed, restore button state
+          this.setCheckoutButtonsLoadingState(false);
+        }
+      });
+      
+      // Listen for messages from background script
+      if (chrome && chrome.runtime && chrome.runtime.onMessage) {
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+          if (message.action === 'popupClosed') {
+            console.log('Popup closed message received');
+            this.setCheckoutButtonsLoadingState(false);
+          }
+        });
+      }
+      
+      // Listen for window focus/blur events to detect popup close
+      window.addEventListener('blur', () => {
+        // When window loses focus, check if popup is still open
+        setTimeout(() => {
+          this.checkPopupState();
+        }, 100);
+      });
+      
+      // Also check periodically for popup state
+      this.checkPopupState();
     },
 
     // Observe page changes for dynamic content
