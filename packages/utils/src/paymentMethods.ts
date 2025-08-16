@@ -14,7 +14,7 @@ export function findPaymentMethodsSection(): HTMLElement | null {
   }
   
   // Fallback: look for sections containing "Other payment methods" text
-  const sections = document.querySelectorAll('div, section');
+  const sections = Array.from(document.querySelectorAll('div, section'));
   for (const section of sections) {
     if (section.textContent && section.textContent.includes('Other payment methods')) {
       return section as HTMLElement;
@@ -42,14 +42,14 @@ export function findPaymentMethodDropdown(): HTMLElement | null {
   ];
   
   for (const selector of dropdownSelectors) {
-    const dropdown = document.querySelector(selector);
+    const dropdown = document.querySelector(selector) as HTMLElement;
     if (dropdown && dropdown.offsetParent !== null) { // Check if visible
-      return dropdown as HTMLElement;
+      return dropdown;
     }
   }
   
   // Look for dropdowns in the DOM that might be hidden
-  const allDropdowns = document.querySelectorAll('[class*="dropdown"], [class*="menu"], [role="listbox"]');
+  const allDropdowns = Array.from(document.querySelectorAll('[class*="dropdown"], [class*="menu"], [role="listbox"]'));
   for (const dropdown of allDropdowns) {
     if (dropdown.textContent && (
       dropdown.textContent.includes('payment') || 
@@ -76,7 +76,7 @@ export function findChangeButton(): HTMLElement | null {
   ];
   
   // Look for buttons with "Change" text
-  const buttons = document.querySelectorAll('button, a');
+  const buttons = Array.from(document.querySelectorAll('button, a'));
   for (const button of buttons) {
     if (button.textContent && button.textContent.trim() === 'Change') {
       return button as HTMLElement;
@@ -84,13 +84,14 @@ export function findChangeButton(): HTMLElement | null {
   }
   
   // Look for elements containing "Change" text
-  const elements = document.querySelectorAll('*');
+  const elements = Array.from(document.querySelectorAll('*'));
   for (const element of elements) {
-    if (element.textContent && element.textContent.trim() === 'Change' && 
-        (element.tagName === 'BUTTON' || element.tagName === 'A' || element.onclick)) {
-      return element as HTMLElement;
+    const htmlElement = element as HTMLElement;
+    if (htmlElement.textContent && htmlElement.textContent.trim() === 'Change' && 
+        (htmlElement.tagName === 'BUTTON' || htmlElement.tagName === 'A' || htmlElement.onclick)) {
+      return htmlElement;
     }
   }
   
   return null;
-} 
+}
