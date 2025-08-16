@@ -80,7 +80,7 @@ const CryptoCheckoutPopup: React.FC = () => {
       });
       
       // Open the Vercel website with price as URL parameter
-      const websiteUrl = `https://webapp-ten-beige.vercel.app?price=${price}&title=${encodeURIComponent(productTitle)}`;
+      const websiteUrl = `https://webapp-gamma-one.vercel.app?price=${price}&title=${encodeURIComponent(productTitle)}`;
       chrome.tabs.create({ url: websiteUrl });
       
       setConnectionStatus(`Opening payment website with price: $${price.toFixed(2)}`);

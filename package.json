@@ -5,8 +5,11 @@
   "private": true,
   "scripts": {
     "dev": "webpack --mode=development --watch",
-    "build": "pnpm run build:all && webpack --mode=production",
-    "build:all": "pnpm -r run build",
+    "build": "pnpm run build:all && webpack --mode=production && pnpm run deploy:webapp",
+    "build:all": "pnpm --filter=!stablecart-webapp -r run build",
+    "deploy:webapp": "cd apps/webapp && vercel --prod --yes",
+    "deploy:webapp:only": "cd apps/webapp && vercel --prod --yes",
+    "get:webapp:url": "cd apps/webapp && vercel ls | grep 'Production' | head -1 | awk '{print $2}'",
     "clean": "rm -rf apps/dist && pnpm -r run clean",
     "lint": "pnpm -r run lint",
     "test": "pnpm -r run test",
