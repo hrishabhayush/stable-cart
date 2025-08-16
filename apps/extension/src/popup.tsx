@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
+// For browser extensions, we'll use a hardcoded URL or get it from storage
+const VERCEL_LINK = 'webapp-gamma-one.vercel.app'; // Hardcoded for now
+
 interface ProductInfo {
   title: string;
   price: number;
@@ -81,7 +84,7 @@ const CryptoCheckoutPopup: React.FC = () => {
       });
       
       // Open the Vercel website with price as URL parameter
-      const websiteUrl = `https://webapp-gamma-one.vercel.app?price=${price}&title=${encodeURIComponent(productTitle)}`;
+      const websiteUrl = `https://${VERCEL_LINK}?price=${price}&title=${encodeURIComponent(productTitle)}`;
       chrome.tabs.create({ url: websiteUrl });
       
       setConnectionStatus(`Opening payment website with price: $${price.toFixed(2)}`);
