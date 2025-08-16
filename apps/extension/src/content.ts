@@ -89,8 +89,18 @@ import { paymentModal } from './payment-modal';
     openExtensionPopup(productInfo: any): void {
       console.log('Opening extension popup...');
       
-      // Store product info in localStorage so popup can access it
-      localStorage.setItem('stablecart_product_info', JSON.stringify(productInfo));
+      // Store product info in chrome storage so popup can access it
+      if (chrome && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ 
+          stablecart_product_info: productInfo 
+        }, () => {
+          console.log('Product info stored in chrome storage');
+        });
+      } else {
+        // Fallback to localStorage if chrome storage not available
+        localStorage.setItem('stablecart_product_info', JSON.stringify(productInfo));
+        console.log('Product info stored in localStorage (fallback)');
+      }
       
       // Add loading state to checkout buttons
       this.setCheckoutButtonsLoadingState(true);
@@ -310,6 +320,26 @@ import { paymentModal } from './payment-modal';
 
     // Get product price from Amazon page
     getProductPrice(): number {
+      // First, try the specific selector for subtotals table
+      const subtotalSelector = '#subtotals-marketplace-table > li:nth-child(4) > span > div > div.order-summary-line-definition';
+      const subtotalElement = document.querySelector(subtotalSelector);
+      
+      if (subtotalElement?.textContent) {
+        const priceText = subtotalElement.textContent.trim();
+        console.log('Found price in subtotals table:', priceText);
+        
+        // Extract numeric value from price text (e.g., "$13.65" -> 13.65)
+        const priceMatch = priceText.match(/[\$£€]?([\d,]+\.?\d*)/);
+        if (priceMatch) {
+          const price = parseFloat(priceMatch[1].replace(/,/g, ''));
+          if (!isNaN(price) && price > 0) {
+            console.log('Successfully extracted price:', price);
+            return price;
+          }
+        }
+      }
+
+      // Fallback to other selectors if the specific one doesn't work
       const selectors = [
         '.a-price .a-offscreen',
         '[data-testid="price"] .a-offscreen',
@@ -325,19 +355,23 @@ import { paymentModal } from './payment-modal';
           const priceText = element.textContent.replace(/[^0-9.]/g, '');
           const price = parseFloat(priceText);
           if (!isNaN(price) && price > 0) {
+            console.log('Found price using fallback selector:', selector, '->', price);
             return price;
           }
         }
       }
 
-      // Fallback: look for any price-like text
+      // Final fallback: look for any price-like text
       const priceRegex = /\$(\d+(?:\.\d{2})?)/;
       const bodyText = document.body.textContent || '';
       const match = bodyText.match(priceRegex);
       if (match) {
-        return parseFloat(match[1]);
+        const price = parseFloat(match[1]);
+        console.log('Found price using regex fallback:', price);
+        return price;
       }
 
+      console.log('No price found, using default fallback price');
       return 9.99; // Default fallback price
     },
 
