@@ -6,12 +6,13 @@ interface ProductInfo {
   price: number;
   image?: string;
   amazonUrl: string;
+  quantity?: number; // Added quantity to the interface
 }
 
 interface WalletOption {
   id: string;
   name: string;
-  icon: string;
+  icon: string; // Path to SVG icon file
   iconBg: string;
   chain: string;
   available: boolean;
@@ -26,24 +27,24 @@ const CryptoCheckoutPopup: React.FC = () => {
     {
       id: 'coinbase',
       name: 'Coinbase Wallet',
-      icon: '□',
-      iconBg: '#0052FF',
+      icon: 'icons/CB.svg',
+      iconBg: 'transparent',
       chain: 'Ethereum Chain',
       available: true
     },
     {
       id: 'metamask',
       name: 'Metamask Wallet',
-      icon: '🦊',
-      iconBg: '#F6851B',
+      icon: 'icons/Metamask.svg',
+      iconBg: 'transparent',
       chain: 'Ethereum Chain',
       available: true
     },
     {
       id: 'phantom',
       name: 'Phantom Wallet',
-      icon: '👻',
-      iconBg: '#AB9DF2',
+      icon: 'icons/Phantom.svg',
+      iconBg: 'transparent',
       chain: 'Ethereum Chain',
       available: true
     }
@@ -95,7 +96,7 @@ const CryptoCheckoutPopup: React.FC = () => {
   };
 
   const formatProductName = (title: string) => {
-    return title.length > 20 ? title.substring(0, 20) + '...' : title;
+    return title.length > 15 ? title.substring(0, 15) + '...' : title;
   };
 
   const getButtonText = () => {
@@ -105,16 +106,16 @@ const CryptoCheckoutPopup: React.FC = () => {
   const getButtonStyle = () => {
     return {
       position: 'absolute' as const,
-      bottom: '20px',
+      bottom: '30px',
       left: '20px',
       right: '20px',
-      height: '48px',
+      height: '32px',
       background: '#FCD34D',
       color: '#111827',
       border: 'none',
-      borderRadius: '8px',
-      fontSize: '16px',
-      fontWeight: 700,
+      borderRadius: '32px',
+      fontSize: '12px',
+      fontWeight: 400,
       cursor: 'pointer' as const,
       transition: 'background-color 0.2s'
     };
@@ -154,7 +155,9 @@ const CryptoCheckoutPopup: React.FC = () => {
             color: '#FFFFFF',
             fontSize: '18px',
             fontWeight: 400,
-            alignSelf: 'center'
+            alignSelf: 'center',
+            textAlign: 'center',
+            width: '100%'
           }}>
             Crypto Checkout
           </div>
@@ -170,19 +173,6 @@ const CryptoCheckoutPopup: React.FC = () => {
           }}
           onClick={handleNetworkSelect}
         >
-          <div style={{
-            width: '20px',
-            height: '20px',
-            background: '#FFFFFF',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-            color: '#232F3E'
-          }}>
-            Ξ
-          </div>
           <span>▼</span>
         </div>
       </div>
@@ -190,14 +180,13 @@ const CryptoCheckoutPopup: React.FC = () => {
       {/* Items Breakdown Section */}
       <div style={{
         position: 'absolute',
-        top: '100px',
+        top: '90px',
         left: '20px',
         right: '20px',
         background: '#FFFFFF',
-        borderRadius: '12px',
+        borderRadius: '5px',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        padding: '20px',
-        height: '200px'
+        padding: '20px'
       }}>
         <h2 style={{
           fontSize: '16px',
@@ -206,16 +195,7 @@ const CryptoCheckoutPopup: React.FC = () => {
           margin: '0 0 12px 0'
         }}>
           Items Breakdown:
-        </h2>
-        <p style={{
-          fontSize: '14px',
-          color: '#374151',
-          lineHeight: 1.5,
-          margin: '0 0 16px 0'
-        }}>
-          Review your shopping cart and connect to your wallet to purchase with stable coins on the <strong>Ethereum</strong> chain. The prices are displayed in <strong>USDC</strong>.
-        </p>
-        
+        </h2>       
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -224,8 +204,8 @@ const CryptoCheckoutPopup: React.FC = () => {
           fontSize: '14px',
           color: '#374151'
         }}>
-          <span>{productInfo ? formatProductName(productInfo.title) : 'Bioré Aqua Mois...:'}</span>
-          <span>x1</span>
+          <span>{productInfo ? formatProductName(productInfo.title) : 'Loading product...'}</span>
+          <span>x{productInfo?.quantity || 1}</span>
         </div>
         
         <div style={{
@@ -241,16 +221,12 @@ const CryptoCheckoutPopup: React.FC = () => {
             <span style={{
               width: '16px',
               height: '16px',
-              background: '#6B7280',
-              borderRadius: '50%',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#FFFFFF',
-              fontSize: '10px',
               marginLeft: '4px'
             }}>
-              i
+              <img src="icons/info.svg" alt="Info" style={{ width: '16px', height: '16px' }} />
             </span>
           </span>
           <span>$0.01</span>
@@ -271,7 +247,7 @@ const CryptoCheckoutPopup: React.FC = () => {
           color: '#111827'
         }}>
           <span>Total:</span>
-          <span>{productInfo ? `$${productInfo.price.toFixed(2)} USDC` : '$13.65 USDC'}</span>
+          <span>{productInfo ? `$${(productInfo.price * (productInfo.quantity || 1)).toFixed(2)} USDC` : 'Loading...'}</span>
         </div>
         
         <div style={{
@@ -281,38 +257,25 @@ const CryptoCheckoutPopup: React.FC = () => {
           fontSize: '14px',
           color: '#374151'
         }}>
+          <span>Estimated Transaction Time:</span>
           <span>
-            <span style={{
-              width: '16px',
-              height: '16px',
-              background: '#6B7280',
-              borderRadius: '50%',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFFFFF',
-              fontSize: '10px',
-              marginRight: '6px'
-            }}>
-              ⏰
-            </span>
-            Estimated Transaction Time:
+            <img src="icons/time.svg" alt="Time" style={{ width: '14px', height: '14px', marginRight: '4px' }} />
+            &lt;1m
           </span>
-          <span>&lt;1m</span>
         </div>
       </div>
 
       {/* Wallet Selection Section */}
       <div style={{
         position: 'absolute',
-        top: '320px',
+        top: '290px',
         left: '20px',
         right: '20px',
         background: '#FFFFFF',
-        borderRadius: '12px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        padding: '20px',
-        height: '200px'
+        borderRadius: '5px',
+        border: '1px solid rgba(35, 47, 62, 0.49)',
+        padding: '20px',  
+        height: '190px'
       }}>
         <h2 style={{
           fontSize: '16px',
@@ -336,9 +299,9 @@ const CryptoCheckoutPopup: React.FC = () => {
           >
             <div 
               style={{
-                width: '18px',
-                height: '18px',
-                border: `2px solid ${selectedWallet === wallet.id ? '#232F3E' : '#D1D5DB'}`,
+                width: '14px',
+                height: '14px',
+                border: `2px solid ${selectedWallet === wallet.id ? '#0275FF' : '#D1D5DB'}`,
                 borderRadius: '50%',
                 position: 'relative',
                 cursor: 'pointer'
@@ -353,7 +316,7 @@ const CryptoCheckoutPopup: React.FC = () => {
                   transform: 'translate(-50%, -50%)',
                   width: '8px',
                   height: '8px',
-                  background: '#232F3E',
+                  background: '#0275FF',
                   borderRadius: '50%'
                 }}></div>
               )}
@@ -362,15 +325,11 @@ const CryptoCheckoutPopup: React.FC = () => {
             <div style={{
               width: '32px',
               height: '32px',
-              background: wallet.iconBg,
-              borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '16px',
-              color: '#FFFFFF'
+              justifyContent: 'center'
             }}>
-              {wallet.icon}
+              <img src={wallet.icon} alt={wallet.name} style={{ width: '32px', height: '32px' }} />
             </div>
             
             <div style={{ flex: 1 }}>
