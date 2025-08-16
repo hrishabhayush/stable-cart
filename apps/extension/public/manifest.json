@@ -11,6 +11,9 @@
   "host_permissions": [
     "https://*.amazon.*/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": [
