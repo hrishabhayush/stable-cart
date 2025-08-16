@@ -3,7 +3,7 @@ import { CheckoutSessionService } from '../services/CheckoutSessionService';
 import { ValidationUtils } from '../utils/validation';
 import { CheckoutSessionStatus, CreateSessionRequest } from '../types/CheckoutSession';
 
-const router = Router();
+const router: Router = Router();
 // We'll get the database from the server and pass it here
 let checkoutSessionService: CheckoutSessionService;
 
@@ -54,13 +54,13 @@ router.post('/', async (req: Request, res: Response) => {
     // Create the session
     const session = await checkoutSessionService.createSession(sessionData);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       session
     });
   } catch (error) {
     console.error('Error creating checkout session:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     });
@@ -91,13 +91,13 @@ router.get('/:sessionId', async (req: Request, res: Response) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       session
     });
   } catch (error) {
     console.error('Error retrieving checkout session:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     });
@@ -159,13 +159,13 @@ router.put('/:sessionId/status', async (req: Request, res: Response) => {
       metadata
     );
 
-    res.json({
+    return res.json({
       success: true,
       session: updatedSession
     });
   } catch (error) {
     console.error('Error updating checkout session status:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     });
@@ -196,7 +196,7 @@ router.get('/:sessionId/status', async (req: Request, res: Response) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       sessionId: session.sessionId,
       status: session.status,
@@ -204,7 +204,7 @@ router.get('/:sessionId/status', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error retrieving checkout session status:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     });
@@ -229,13 +229,13 @@ router.get('/', async (req: Request, res: Response) => {
 
     const sessions = await checkoutSessionService.getAllSessions(options);
 
-    res.json({
+    return res.json({
       success: true,
       sessions
     });
   } catch (error) {
     console.error('Error retrieving checkout sessions:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     });
@@ -250,13 +250,13 @@ router.post('/cleanup', async (req: Request, res: Response) => {
   try {
     const cleanedCount = await checkoutSessionService.cleanupExpiredSessions();
 
-    res.json({
+    return res.json({
       success: true,
       cleanedCount
     });
   } catch (error) {
     console.error('Error cleaning up expired sessions:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     });

@@ -3,7 +3,7 @@ import { GiftCodeInventoryService } from '../../services/GiftCodeInventoryServic
 import { Database } from 'sqlite3';
 import { GiftCode, GiftCodeStatus } from '../../types/giftCode';
 
-const router = Router();
+const router: Router = Router();
 
 // Initialize service (can be overridden for testing)
 let giftCodeService: GiftCodeInventoryService;
@@ -108,12 +108,12 @@ router.post('/', validateGiftCode, async (req, res) => {
 
     const result = await giftCodeService.addGiftCode(giftCode);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       giftCode: result
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -143,13 +143,13 @@ router.post('/bulk', validateBulkGiftCodes, async (req, res) => {
       results.push(result);
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       giftCodes: results,
       count: results.length
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -161,12 +161,12 @@ router.get('/', async (req, res) => {
   try {
     // For now, we'll need to add a method to get all codes
     // This is a placeholder - you can implement getAllGiftCodes in the service
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       giftCodes: await giftCodeService.getAllGiftCodes(),
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -178,12 +178,12 @@ router.get('/stats', async (req, res) => {
   try {
     const stats = await giftCodeService.getInventoryStats();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       stats
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     });
