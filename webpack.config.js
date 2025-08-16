@@ -36,5 +36,6 @@ module.exports = {
       ]
     })
   ],
-  mode: 'production'
+  mode: 'production',
+  devtool: 'source-map' // Use source-map instead of eval for CSP compliance
 }; 

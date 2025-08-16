@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        .status.connected {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        .status.error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .events {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .event {
+            padding: 8px;
+            margin: 5px 0;
+            background-color: white;
+            border-radius: 3px;
+            border-left: 3px solid #007bff;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 SSE Integration Test</h1>
+        <p>Testing Chrome Extension SSE service with real backend</p>
+        
+        <div class="status" id="connectionStatus">
+            Status: Disconnected
+        </div>
+        
+        <div>
+            <input type="text" id="sessionId" placeholder="Enter session ID" value="session-198b3b3c0414f7wag3b">
+            <button onclick="connect()" id="connectBtn">Connect</button>
+            <button onclick="disconnect()" id="disconnectBtn" disabled>Disconnect</button>
+        </div>
+        
+        <div class="events" id="events">
+            <div class="event">Ready to test SSE connection...</div>
+        </div>
+        
+        <div>
+            <h3>Test Session Details:</h3>
+            <p><strong>Session ID:</strong> session-198b3b3c0414f7wag3b</p>
+            <p><strong>Status:</strong> CREATED (waiting for payment)</p>
+            <p><strong>Cart Total:</strong> $100.00</p>
+            <p><strong>Current Balance:</strong> $50.00</p>
+            <p><strong>Top-up Needed:</strong> $50.00</p>
+        </div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        let isConnected = false;
+
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.textContent = `Status: ${message}`;
+            statusEl.className = `status ${type}`;
+        }
+
+        function addEvent(eventType, data) {
+            const eventsEl = document.getElementById('events');
+            const eventEl = document.createElement('div');
+            eventEl.className = 'event';
+            eventEl.innerHTML = `
+                <strong>${eventType}</strong>: ${JSON.stringify(data, null, 2)}
+            `;
+            eventsEl.appendChild(eventEl);
+            eventsEl.scrollTop = eventsEl.scrollHeight;
+        }
+
+        function connect() {
+            const sessionId = document.getElementById('sessionId').value.trim();
+            if (!sessionId) {
+                alert('Please enter a session ID');
+                return;
+            }
+
+            if (isConnected) {
+                disconnect();
+            }
+
+            updateStatus('Connecting...', 'info');
+            
+            try {
+                // Create EventSource connection
+                const url = `http://localhost:65535/api/checkout-sessions/${sessionId}/events`;
+                eventSource = new EventSource(url);
+                
+                eventSource.onopen = function(event) {
+                    updateStatus('Connected to SSE endpoint', 'connected');
+                    isConnected = true;
+                    document.getElementById('connectBtn').disabled = true;
+                    document.getElementById('disconnectBtn').disabled = false;
+                    addEvent('connection', 'SSE connection established');
+                };
+                
+                eventSource.onmessage = function(event) {
+                    addEvent('message', event.data);
+                };
+                
+                eventSource.addEventListener('connected', function(event) {
+                    const data = JSON.parse(event.data);
+                    addEvent('connected', data);
+                    updateStatus(`Connected to session: ${data.sessionId} (${data.status})`, 'connected');
+                });
+                
+                eventSource.addEventListener('status_update', function(event) {
+                    const data = JSON.parse(event.data);
+                    addEvent('status_update', data);
+                });
+                
+                eventSource.addEventListener('error', function(event) {
+                    const data = JSON.parse(event.data);
+                    addEvent('error', data);
+                    updateStatus('Error occurred', 'error');
+                });
+                
+                eventSource.onerror = function(event) {
+                    addEvent('error', 'EventSource error occurred');
+                    updateStatus('Connection error', 'error');
+                    disconnect();
+                };
+                
+            } catch (error) {
+                updateStatus(`Connection failed: ${error.message}`, 'error');
+                addEvent('error', error.message);
+            }
+        }
+
+        function disconnect() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            
+            isConnected = false;
+            updateStatus('Disconnected', 'info');
+            document.getElementById('connectBtn').disabled = false;
+            document.getElementById('disconnectBtn').disabled = true;
+            addEvent('disconnect', 'SSE connection closed');
+        }
+
+        // Auto-connect on page load
+        window.onload = function() {
+            setTimeout(() => {
+                connect();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
