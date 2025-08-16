@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StableCart Extension Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: #232F3E;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #1a2532;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>StableCart Extension Test Page</h1>
+    
+    <div class="test-container">
+        <h2>Wallet Integration Test</h2>
+        <p>This page simulates an Amazon product page to test the StableCart extension.</p>
+        
+        <div id="product-info">
+            <h3>Test Product</h3>
+            <p>Price: $29.99</p>
+        </div>
+        
+        <button class="test-button" onclick="testWalletManager()">Test Wallet Manager</button>
+        <button class="test-button" onclick="testPaymentModal()">Test Payment Modal</button>
+        <button class="test-button" onclick="testWalletDetection()">Test Wallet Detection</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Extension Status</h2>
+        <div id="extension-status" class="status info">
+            Checking extension status...
+        </div>
+    </div>
+
+    <script>
+        // Mock product info to simulate Amazon page
+        window.productInfo = {
+            title: "Test Amazon Product",
+            price: 29.99,
+            image: "https://via.placeholder.com/150",
+            amazonUrl: window.location.href
+        };
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('test-results');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function testWalletManager() {
+            try {
+                // Test if wallet manager is available
+                if (typeof window.walletManager !== 'undefined') {
+                    updateStatus('✅ Wallet Manager is available', 'success');
+                    
+                    const providers = window.walletManager.getAvailableProviders();
+                    updateStatus(`Found ${providers.length} available wallet providers: ${providers.map(p => p.name).join(', ')}`, 'info');
+                } else {
+                    updateStatus('❌ Wallet Manager not found. Extension may not be loaded.', 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ Error testing wallet manager: ${error.message}`, 'error');
+            }
+        }
+
+        function testPaymentModal() {
+            try {
+                // Test if payment modal is available
+                if (typeof window.paymentModal !== 'undefined') {
+                    updateStatus('✅ Payment Modal is available', 'success');
+                    
+                    // Try to show the modal
+                    window.paymentModal.show(window.productInfo);
+                    updateStatus('✅ Payment Modal should be displayed', 'success');
+                } else {
+                    updateStatus('❌ Payment Modal not found. Extension may not be loaded.', 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ Error testing payment modal: ${error.message}`, 'error');
+            }
+        }
+
+        function testWalletDetection() {
+            try {
+                // Test wallet detection
+                const ethereum = window.ethereum;
+                if (ethereum) {
+                    updateStatus('✅ Ethereum provider detected', 'success');
+                    
+                    if (ethereum.isMetaMask) {
+                        updateStatus('✅ MetaMask detected', 'success');
+                    }
+                    if (ethereum.isCoinbaseWallet) {
+                        updateStatus('✅ Coinbase Wallet detected', 'success');
+                    }
+                } else {
+                    updateStatus('❌ No Ethereum provider detected. Install MetaMask or Coinbase Wallet.', 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ Error testing wallet detection: ${error.message}`, 'error');
+            }
+        }
+
+        // Check extension status on load
+        window.addEventListener('load', () => {
+            const statusDiv = document.getElementById('extension-status');
+            
+            // Check if extension content script is loaded
+            if (document.querySelector('#amazon-crypto-wallet-row') || 
+                document.querySelector('#amazon-crypto-checkout-button')) {
+                statusDiv.innerHTML = '<div class="status success">✅ Extension is active and has injected elements</div>';
+            } else {
+                statusDiv.innerHTML = '<div class="status info">ℹ️ Extension may not be loaded or this is not an Amazon page</div>';
+            }
+        });
+
+        // Listen for messages from extension
+        window.addEventListener('message', (event) => {
+            if (event.source !== window) return;
+            
+            if (event.data.type === 'STABLECART_EXTENSION_LOADED') {
+                updateStatus('✅ Extension loaded successfully', 'success');
+            }
+        });
+    </script>
+</body>
+</html>
