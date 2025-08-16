@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useConnect, useAccount, useDisconnect } from 'wagmi';
 import { coinbaseWallet } from 'wagmi/connectors';
 import { priceConversionService, PriceData } from '../services/priceConversion';
+import { getMerchantAddress } from '../config/merchant';
 import PaymentButton from '../components/PaymentButton';
 import styles from '../styles/Home.module.css';
 
@@ -21,9 +22,17 @@ const Home = () => {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   
-  // Valid merchant address (Amazon's address - replace with actual address)
-  const MERCHANT_ADDRESS = '0xD880E96C35B217B9E220B69234A12AcFC175f92B';
+  // Get Sepolia merchant address from config
+  const MERCHANT_ADDRESS = getMerchantAddress();
   
+  // Ensure wallet is disconnected when component mounts
+  useEffect(() => {
+    // Disconnect any existing wallet connection on mount
+    if (isConnected) {
+      disconnect();
+    }
+  }, []); // Empty dependency array means this runs only once on mount
+
   // Load price conversion when component mounts or price changes
   useEffect(() => {
     const loadPriceConversion = async () => {
@@ -107,6 +116,12 @@ const Home = () => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  // Format receiver address with ellipses
+  const formatReceiverAddress = (address: string) => {
+    if (address.length <= 12) return address;
+    return `${address.slice(0, 6)}...${address.slice(-6)}`;
+  };
+
   // Format product name with ellipses like popup
   const formatProductName = (title: string) => {
     return title.length > 15 ? title.substring(0, 15) + '...' : title;
@@ -123,7 +138,7 @@ const Home = () => {
       </Head>
 
       <main className={styles.main}>
-        {/* Main Container - Fixed size like Figma */}
+        {/* Main Container - Fixed size like popup */}
         <div className={styles.mainContainer}>
           {/* Header Section - Exactly like popup */}
           <div className={styles.header}>
@@ -185,10 +200,13 @@ const Home = () => {
                   <span className={styles.externalLink}>
                     <img src="/icons/opennewwindow.svg" alt="External Link" />
                   </span>
-                  <span className={styles.infoValue}>{MERCHANT_ADDRESS}</span>
+                  <span className={styles.infoValue}>{formatReceiverAddress(MERCHANT_ADDRESS)}</span>
                 </div>
               </div>
             </div>
+
+            {/* Separator Line */}
+            <div className={styles.sectionSeparator}></div>
 
             {/* Price Information Section */}
             <div className={styles.section}>
@@ -208,6 +226,9 @@ const Home = () => {
                 <span className={styles.infoValue}>{productPrice} USDC</span>
               </div>
             </div>
+
+            {/* Separator Line */}
+            <div className={styles.sectionSeparator}></div>
 
             {/* Blockchain Information Section */}
             <div className={styles.section}>
@@ -240,52 +261,15 @@ const Home = () => {
             )}
           </div>
           
-          {/* Price Display Section */}
-          {isConnected && priceData && (
-            <div className={styles.priceDisplay}>
-              <div className={styles.priceTitle}>💱 Price Conversion</div>
-              <div className={styles.priceDetails}>
-                <div><strong>Amazon Price:</strong> {priceConversionService.formatUsdAmount(priceData.usd)}</div>
-                <div><strong>ETH Amount:</strong> {priceConversionService.formatEthAmount(priceData.eth)}</div>
-                <div className={styles.ethPrice}>ETH Price: {priceConversionService.formatUsdAmount(priceData.ethUsdPrice)}</div>
-                <div className={styles.lastUpdated}>Last updated: {priceData.lastUpdated.toLocaleTimeString()}</div>
-              </div>
-            </div>
-          )}
-          
-          {/* Disconnect Wallet Button - Only show when connected */}
-          {isConnected && (
-            <button 
-              className={styles.disconnectWalletLink}
-              onClick={handleDisconnect}
-              style={{ marginBottom: '15px' }}
-            >
-              Disconnect Wallet
-            </button>
-          )}
-          
-          {/* Main Button - Changes based on connection state */}
-          {!isConnected ? (
-            <button 
-              className={`${styles.connectWalletButton} ${isConnected ? styles.connectedButton : ''}`}
-              onClick={connectCoinbaseWallet}
-              disabled={isConnecting}
-            >
-              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-            </button>
-          ) : (
-            /* Payment Button Component - Only show when connected and price data is available */
-            priceData && (
-              <PaymentButton
-                amount={priceData.eth}
-                merchantAddress={MERCHANT_ADDRESS}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-                disabled={isLoadingPrice}
-                className={styles.paymentButtonContainer}
-              />
-            )
-          )}
+          {/* Main Button - Always show at bottom center */}
+          <PaymentButton
+            amount={priceData?.eth || 0}
+            merchantAddress={MERCHANT_ADDRESS}
+            onPaymentSuccess={handlePaymentSuccess}
+            onPaymentError={handlePaymentError}
+            disabled={isLoadingPrice}
+            className={styles.paymentButtonContainer}
+          />
         </div>
       </main>
     </div>

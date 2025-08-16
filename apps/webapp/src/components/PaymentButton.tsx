@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useSendTransaction, useWaitForTransactionReceipt, useAccount } from 'wagmi';
+import { useConnect, useSendTransaction, useWaitForTransactionReceipt, useAccount, useDisconnect, useSwitchChain } from 'wagmi';
+import { coinbaseWallet } from 'wagmi/connectors';
 import { parseEther } from 'viem';
+import { sepolia } from 'wagmi/chains';
 
 interface PaymentButtonProps {
   amount: number;
-  merchantAddress: string;
+  merchantAddress: `0x${string}`;
   onPaymentSuccess?: (txHash: string) => void;
   onPaymentError?: (error: Error) => void;
   disabled?: boolean;
   className?: string;
-}
-
-interface NetworkInfo {
-  EXPLORER_URL: string;
-  CHAIN_NAME: string;
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({
@@ -28,30 +25,19 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const [error, setError] = useState<Error | null>(null);
   
   // Wagmi hooks
-  const { address, isConnected } = useAccount();
-  const { 
-    data: hash, 
-    sendTransaction, 
-    isPending, 
-    error: sendError 
-  } = useSendTransaction();
-  
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-    hash,
-  });
+  const { connect, isPending: isConnecting } = useConnect();
+  const { address, isConnected, chainId } = useAccount();
+  const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
+  const { data: hash, sendTransaction, isPending: isSending } = useSendTransaction();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
   // Transaction state
   const [txHash, setTxHash] = useState<string>('');
 
-  // Network configuration - default to Base network
-  const NETWORK_INFO: NetworkInfo = {
-    EXPLORER_URL: 'https://basescan.org',
-    CHAIN_NAME: 'Base'
-  };
-
   // Update disabled state based on connection and props
   useEffect(() => {
-    setIsDisabled(disabled || !isConnected || !address);
+    setIsDisabled(disabled || (isConnected && !address));
   }, [disabled, isConnected, address]);
 
   // Update transaction hash when available
@@ -62,22 +48,40 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     }
   }, [hash]);
 
-  // Handle transaction success
+  // Check for send transaction errors
   useEffect(() => {
-    if (isSuccess && txHash) {
-      console.log('Payment successful! Transaction hash:', txHash);
-      onPaymentSuccess?.(txHash);
+    if (hash) {
+      console.log('Transaction hash:', hash);
+      onPaymentSuccess?.(hash);
     }
-  }, [isSuccess, txHash, onPaymentSuccess]);
+  }, [hash, onPaymentSuccess]);
 
-  // Handle send errors
+  // Check for transaction confirmation
   useEffect(() => {
-    if (sendError) {
-      const error = new Error(sendError.message);
-      setError(error);
-      onPaymentError?.(error);
+    if (isSuccess) {
+      console.log('Transaction confirmed!');
     }
-  }, [sendError, onPaymentError]);
+  }, [isSuccess]);
+
+  // Check for transaction errors
+  useEffect(() => {
+    if (isSending && !hash) {
+      // Transaction failed to send
+      setError(new Error('Failed to send transaction'));
+    }
+  }, [isSending, hash]);
+
+  const connectCoinbaseWallet = () => {
+    // Force connection to Sepolia
+    connect({ 
+      connector: coinbaseWallet(),
+      chainId: sepolia.id 
+    });
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+  };
 
   const makePayment = async () => {
     if (!isConnected || !address) {
@@ -94,11 +98,29 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       console.log(`Initiating payment of ${amount} ETH`);
       console.log(`Transaction will be sent from: ${address} to: ${merchantAddress}`);
 
-      // Send ETH directly to merchant address
-      await sendTransaction({
+      // ABSOLUTE MINIMUM TRANSACTION - Force simple ETH transfer
+      // Only include the essential fields: to, value
+      // Let wagmi handle everything else automatically
+      const txRequest = {
         to: merchantAddress,
         value: amountInWei,
-      });
+        chainId: sepolia.id, // Force transaction on Sepolia
+        data: undefined, // Explicitly set to undefined to ensure simple ETH transfer
+      };
+
+      console.log('=== TRANSACTION DETAILS ===');
+      console.log('Transaction request (Sepolia):', txRequest);
+      console.log('Sepolia chain ID:', sepolia.id);
+      console.log('Merchant address (Sepolia):', merchantAddress);
+      console.log('Amount in wei:', amountInWei.toString());
+      console.log('Amount in ETH:', amount);
+      console.log('Sender address:', address);
+      console.log('Network: Sepolia Testnet');
+      console.log('Transaction type: Simple ETH transfer (no contract interaction)');
+      console.log('Data field: undefined (ensures simple ETH transfer)');
+      console.log('========================');
+
+      await sendTransaction(txRequest);
 
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Payment failed');
@@ -108,117 +130,88 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     }
   };
 
+  const handleButtonClick = async () => {
+    if (!isConnected) {
+      connectCoinbaseWallet();
+      return;
+    }
+
+    // Check if we're on the right chain
+    if (chainId !== sepolia.id) {
+      console.log('=== CHAIN SWITCH REQUIRED ===');
+      console.log('Current chain ID:', chainId);
+      console.log('Target chain ID:', sepolia.id);
+      console.log('Switching to Sepolia...');
+      try {
+        await switchChain({ chainId: sepolia.id });
+        console.log('Successfully switched to Sepolia');
+      } catch (error) {
+        console.error('Failed to switch to Sepolia:', error);
+        setError(new Error('Please switch to Sepolia testnet in your wallet'));
+        return;
+      }
+    } else {
+      console.log('Already on Sepolia testnet');
+    }
+
+    // Now make the payment
+    makePayment();
+  };
+
   const getButtonText = () => {
-    if (isPending || isConfirming) return 'Processing...';
-    if (!isConnected) return 'Connect Wallet';
-    return `Pay ${amount} ETH`;
+    if (isConnecting) return 'Connecting...';
+    if (isSending || isConfirming) return 'Processing...';
+    if (!isConnected) return 'Connect to wallet';
+    return 'Place your order';
   };
 
   return (
     <div className={className}>
+      {/* Disconnect Wallet Button - Only show when connected */}
+      {isConnected && (
+        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+          <button
+            onClick={handleDisconnect}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#0066cc',
+              textDecoration: 'underline',
+              fontSize: '14px',
+              cursor: 'pointer',
+              fontFamily: 'Amazon Ember Display, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            }}
+          >
+            Disconnect wallet
+          </button>
+        </div>
+      )}
+      
       {/* Payment Button */}
       <button
-        onClick={makePayment}
-        disabled={isDisabled}
+        onClick={handleButtonClick}
+        disabled={isDisabled || isConnecting}
         className="payment-button"
         style={{
-          background: isDisabled 
+          background: isDisabled || isConnecting
             ? '#cccccc' 
-            : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-          color: 'white',
+            : 'linear-gradient(135deg, #FFD812 0%, #F4C800 100%)',
+          color: '#000000',
           border: 'none',
-          padding: '16px 32px',
-          borderRadius: '12px',
-          fontSize: '18px',
-          fontWeight: '600',
-          cursor: isDisabled ? 'not-allowed' : 'pointer',
+          padding: '12px 32px',
+          borderRadius: '24px',
+          fontSize: '14px',
+          fontWeight: '400',
+          cursor: isDisabled || isConnecting ? 'not-allowed' : 'pointer',
           transition: 'all 0.3s ease',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontFamily: 'Amazon Ember Display, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
           minWidth: '200px',
           textAlign: 'center',
-          opacity: isDisabled ? 0.6 : 1,
+          opacity: isDisabled || isConnecting ? 0.6 : 1,
         }}
       >
         {getButtonText()}
       </button>
-      
-      {/* Merchant Address Display */}
-      <div style={{
-        marginTop: '15px',
-        padding: '10px',
-        background: '#f0fdf4',
-        border: '1px solid #22c55e',
-        borderRadius: '8px',
-        fontSize: '14px',
-        textAlign: 'center',
-        maxWidth: '400px'
-      }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '5px', color: '#166534' }}>
-          💰 Payment Destination:
-        </div>
-        <div style={{ 
-          fontFamily: 'monospace', 
-          fontSize: '12px', 
-          wordBreak: 'break-all',
-          color: '#166534',
-          background: '#dcfce7',
-          padding: '8px',
-          borderRadius: '4px',
-          marginTop: '5px'
-        }}>
-          {merchantAddress}
-        </div>
-      </div>
-      
-      {/* Transaction Status */}
-      {txHash && (
-        <div style={{
-          marginTop: '15px',
-          padding: '10px',
-          background: '#f0f9ff',
-          border: '1px solid #0ea5e9',
-          borderRadius: '8px',
-          fontSize: '14px',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-            Transaction Status:
-          </div>
-          <div style={{ fontFamily: 'monospace', fontSize: '12px', wordBreak: 'break-all' }}>
-            Hash: {txHash}
-          </div>
-          <div style={{ marginTop: '5px' }}>
-            {isConfirming ? '⏳ Confirming...' : isSuccess ? '✅ Confirmed!' : '⏳ Pending...'}
-          </div>
-          <div style={{ marginTop: '10px', fontSize: '12px', color: '#0369a1' }}>
-            <a 
-              href={`${NETWORK_INFO.EXPLORER_URL}/tx/${txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#0369a1', textDecoration: 'underline' }}
-            >
-              View on {NETWORK_INFO.CHAIN_NAME}scan →
-            </a>
-          </div>
-        </div>
-      )}
-
-      {/* Error Display */}
-      {error && (
-        <div style={{
-          marginTop: '15px',
-          padding: '10px',
-          background: '#fef2f2',
-          border: '1px solid #ef4444',
-          borderRadius: '8px',
-          fontSize: '14px',
-          textAlign: 'center',
-          color: '#dc2626'
-        }}>
-          Error: {error.message}
-        </div>
-      )}
     </div>
   );
 };
