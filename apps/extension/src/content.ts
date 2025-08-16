@@ -17,21 +17,48 @@ import { paymentModal } from './payment-modal';
       '.payment-methods-section',
       '#payment-methods-section'
     ],
-    // Button styling to match Amazon's design
+    // Button styling to match Amazon's "Place your order" button
     buttonStyles: {
       backgroundColor: '#232F3E',
       color: '#FFFFFF',
       border: 'none',
-      borderRadius: '8px',
-      fontSize: '14px',
-      fontWeight: '500',
-      padding: '8px 16px',
+      borderRadius: '24px',
+      fontSize: '12px',
+      fontWeight: '400',
+      padding: '12px 12px 12px 12px',
       cursor: 'pointer',
       textAlign: 'center',
       textDecoration: 'none',
-      display: 'inline-block',
-      marginTop: '8px',
-      transition: 'background-color 0.2s ease'
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      marginBottom: '16px',
+      marginTop: '18px',
+      height: '34px',
+      transition: 'all 0.3s ease',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+    },
+    // Second button styling (same as first but separate)
+    secondButtonStyles: {
+      backgroundColor: '#232F3E',
+      color: '#FFFFFF',
+      border: 'none',
+      borderRadius: '24px',
+      fontSize: '12px',
+      fontWeight: '400',
+      padding: '12px 12px 12px 12px',
+      cursor: 'pointer',
+      textAlign: 'center',
+      textDecoration: 'none',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '201px',
+      height: '34px',
+      transition: 'all 0.3s ease',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
     }
   };
 
@@ -296,10 +323,45 @@ import { paymentModal } from './payment-modal';
       // Add hover effect
       button.addEventListener('mouseenter', () => {
         button.style.backgroundColor = '#1a2532';
+        button.style.transform = 'translateY(-1px)';
+        button.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
       });
       
       button.addEventListener('mouseleave', () => {
-        button.style.backgroundColor = '#232F3E';
+        button.style.backgroundColor = CONFIG.buttonStyles.backgroundColor;
+        button.style.transform = 'translateY(0)';
+        button.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+      });
+
+      // Add click handler
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.handleCryptoCheckout();
+      });
+
+      return button;
+    },
+
+    // Create second crypto checkout button (separate styling)
+    createSecondCryptoButton(): HTMLElement {
+      const button = document.createElement('button');
+      button.textContent = 'Checkout with crypto';
+      button.id = 'amazon-crypto-checkout-button-2';
+      
+      // Apply second button styles
+      Object.assign(button.style, CONFIG.secondButtonStyles);
+
+      // Add hover effect
+      button.addEventListener('mouseenter', () => {
+        button.style.backgroundColor = '#1a2532';
+        button.style.transform = 'translateY(-1px)';
+        button.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+      });
+      
+      button.addEventListener('mouseleave', () => {
+        button.style.backgroundColor = CONFIG.secondButtonStyles.backgroundColor;
+        button.style.transform = 'translateY(0)';
+        button.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
       });
 
       // Add click handler
@@ -313,7 +375,20 @@ import { paymentModal } from './payment-modal';
 
     // Inject checkout button into page
     injectCheckoutButton(): void {
-      // Look for checkout sections
+      // Look for the specific subtotals section
+      const subtotalsSelector = '#subtotals > div > div';
+      const subtotalsSection = document.querySelector(subtotalsSelector);
+      
+      if (subtotalsSection && !document.getElementById('amazon-crypto-checkout-button')) {
+        const button = this.createCryptoButton();
+        
+        // Insert the button before the subtotals section
+        subtotalsSection.parentElement?.insertBefore(button, subtotalsSection);
+        console.log('Crypto checkout button injected above subtotals');
+        return;
+      }
+      
+      // Fallback: look for other checkout sections if subtotals not found
       const checkoutSelectors = [
         '#checkout-pyo-button-block',
         '#subtotals',
@@ -326,8 +401,40 @@ import { paymentModal } from './payment-modal';
         if (section && !document.getElementById('amazon-crypto-checkout-button')) {
           const button = this.createCryptoButton();
           section.appendChild(button);
-          console.log('Crypto checkout button injected');
+          console.log('Crypto checkout button injected (fallback)');
           break;
+        }
+      }
+    },
+
+    // Inject second checkout button between specific selectors
+    injectSecondCheckoutButton(): void {
+      // Look for the specific checkout button block selectors
+      const leftSelector = '#checkout-pyo-button-block > div > div.a-column.a-span12.a-spacing-base.a-ws-span3.a-ws-spacing-none.pyo-block-inline-container-left';
+      const rightSelector = '#checkout-pyo-button-block > div > div.a-column.a-span12.a-spacing-none.a-ws-span9.a-ws-spacing-none.pyo-block-inline-container-right.a-span-last.a-ws-span-last';
+      
+      const leftSection = document.querySelector(leftSelector);
+      const rightSection = document.querySelector(rightSelector);
+      
+      if (leftSection && rightSection && !document.getElementById('amazon-crypto-checkout-button-2')) {
+        const button = this.createSecondCryptoButton();
+        
+        // Create a container div for the button
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.cssText = `
+          display: inline-block;
+          margin: 0;
+          width: auto;
+        `;
+        buttonContainer.appendChild(button);
+        
+        // Insert the button container between the left and right sections
+        const parentElement = leftSection.parentElement;
+        if (parentElement) {
+          // Find the index of the right section to insert before it
+          const rightIndex = Array.from(parentElement.children).indexOf(rightSection);
+          parentElement.insertBefore(buttonContainer, parentElement.children[rightIndex]);
+          console.log('Second crypto checkout button injected between checkout sections');
         }
       }
     },
@@ -349,6 +456,7 @@ import { paymentModal } from './payment-modal';
       setTimeout(() => {
         this.injectCryptoWalletOption();
         this.injectCheckoutButton();
+        this.injectSecondCheckoutButton(); // Added this line
       }, 1000);
 
       // Watch for dynamic content changes
@@ -363,6 +471,7 @@ import { paymentModal } from './payment-modal';
             if (this.isAmazonPage()) {
               this.injectCryptoWalletOption();
               this.injectCheckoutButton();
+              this.injectSecondCheckoutButton(); // Added this line
             }
           }, 500);
         }
@@ -377,7 +486,8 @@ import { paymentModal } from './payment-modal';
     // Check if we need to inject elements again
     shouldReinject(): boolean {
       return !document.getElementById('amazon-crypto-wallet-row') ||
-             !document.getElementById('amazon-crypto-checkout-button');
+             !document.getElementById('amazon-crypto-checkout-button') ||
+             !document.getElementById('amazon-crypto-checkout-button-2');
     }
   };
 
