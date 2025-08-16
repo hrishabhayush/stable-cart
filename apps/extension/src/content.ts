@@ -1,6 +1,8 @@
 // Amazon Crypto Checkout Extension - TypeScript version
 // Content script that runs on Amazon pages
 
+import { paymentModal } from './payment-modal';
+
 (function() {
   'use strict';
 
@@ -43,7 +45,100 @@
     // Handle crypto checkout
     handleCryptoCheckout(): void {
       console.log('Crypto checkout initiated');
-      alert('Crypto checkout feature coming soon!');
+      
+      // Extract product information from Amazon page
+      const productInfo = this.extractProductInfo();
+      
+      // Show payment modal
+      paymentModal.show(productInfo);
+    },
+
+    // Extract product information from current Amazon page
+    extractProductInfo() {
+      const productTitle = this.getProductTitle();
+      const productPrice = this.getProductPrice();
+      const productImage = this.getProductImage();
+      const amazonUrl = window.location.href;
+
+      return {
+        title: productTitle,
+        price: productPrice,
+        image: productImage,
+        amazonUrl: amazonUrl
+      };
+    },
+
+    // Get product title from Amazon page
+    getProductTitle(): string {
+      const selectors = [
+        '#productTitle',
+        'h1[data-automation-id="product-title"]',
+        '.product-title',
+        'h1.a-size-large',
+        '[data-testid="product-title"]'
+      ];
+
+      for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element?.textContent) {
+          return element.textContent.trim();
+        }
+      }
+
+      return 'Amazon Product';
+    },
+
+    // Get product price from Amazon page
+    getProductPrice(): number {
+      const selectors = [
+        '.a-price .a-offscreen',
+        '[data-testid="price"] .a-offscreen',
+        '.a-price-whole',
+        '.a-price-fraction',
+        '#corePrice_feature_div .a-price .a-offscreen',
+        '.a-price.a-text-price.a-size-medium.apexPriceToPay .a-offscreen'
+      ];
+
+      for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element?.textContent) {
+          const priceText = element.textContent.replace(/[^0-9.]/g, '');
+          const price = parseFloat(priceText);
+          if (!isNaN(price) && price > 0) {
+            return price;
+          }
+        }
+      }
+
+      // Fallback: look for any price-like text
+      const priceRegex = /\$(\d+(?:\.\d{2})?)/;
+      const bodyText = document.body.textContent || '';
+      const match = bodyText.match(priceRegex);
+      if (match) {
+        return parseFloat(match[1]);
+      }
+
+      return 9.99; // Default fallback price
+    },
+
+    // Get product image from Amazon page
+    getProductImage(): string | undefined {
+      const selectors = [
+        '#landingImage',
+        '[data-testid="product-image"] img',
+        '.a-dynamic-image',
+        '#ebooksImgBlkFront img',
+        '.itemPhoto img'
+      ];
+
+      for (const selector of selectors) {
+        const element = document.querySelector(selector) as HTMLImageElement;
+        if (element?.src) {
+          return element.src;
+        }
+      }
+
+      return undefined;
     },
 
     // Find payment methods section
