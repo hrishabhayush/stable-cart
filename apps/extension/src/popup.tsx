@@ -281,7 +281,7 @@ const CryptoCheckoutPopup: React.FC = () => {
           fontSize: '16px',
           fontWeight: 700,
           color: '#111827',
-          margin: '0 0 12px 0'
+          margin: '0 0 8px 0'
         }}>
           Select a Wallet to Continue
         </h2>
@@ -365,7 +365,7 @@ const CryptoCheckoutPopup: React.FC = () => {
       </div>
 
       {/* Connection Status */}
-      {connectionStatus && (
+      {/* {connectionStatus && (
         <div style={{
           position: 'absolute',
           bottom: '80px',
@@ -381,7 +381,7 @@ const CryptoCheckoutPopup: React.FC = () => {
         }}>
           {connectionStatus}
         </div>
-      )}
+      )} */}
 
       {/* Proceed to Payment Button */}
       <button 
