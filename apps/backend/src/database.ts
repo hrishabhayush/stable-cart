@@ -28,14 +28,16 @@ export function initializeDatabase(db: Database): Promise<void> {
       db.run(`
         CREATE TABLE IF NOT EXISTS gift_code_inventory (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          denomination_cents INTEGER NOT NULL,
-          code_masked TEXT NOT NULL,
-          ciphertext TEXT NOT NULL,
-          nonce TEXT NOT NULL,
-          status TEXT CHECK(status IN ('AVAILABLE', 'ALLOCATED', 'USED')) DEFAULT 'AVAILABLE',
+          denomination INTEGER NOT NULL,
+          code TEXT NOT NULL,
+          encryptedCode TEXT,
+          encryptionKey TEXT,
+          status TEXT CHECK(status IN ('AVAILABLE', 'ALLOCATED', 'REDEEMED', 'EXPIRED', 'CANCELLED')) DEFAULT 'AVAILABLE',
           allocated_to_session INTEGER,
-          purchased_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           allocated_at DATETIME,
+          expires_at DATETIME,
+          metadata TEXT,
           FOREIGN KEY (allocated_to_session) REFERENCES checkout_sessions(id)
         )
       `, (err) => {
@@ -83,7 +85,7 @@ export function initializeDatabase(db: Database): Promise<void> {
                   return;
                 }
 
-                db.run(`CREATE INDEX IF NOT EXISTS idx_inventory_denomination ON gift_code_inventory(denomination_cents)`, (err) => {
+                db.run(`CREATE INDEX IF NOT EXISTS idx_inventory_denomination ON gift_code_inventory(denomination)`, (err) => {
                   if (err) {
                     reject(err);
                     return;
