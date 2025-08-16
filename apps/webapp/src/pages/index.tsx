@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { useConnect, useAccount, useDisconnect, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { useConnect, useAccount, useDisconnect } from 'wagmi';
 import { coinbaseWallet } from 'wagmi/connectors';
-import { parseEther } from 'viem';
 import { priceConversionService, PriceData } from '../services/priceConversion';
+import PaymentButton from '../components/PaymentButton';
 import styles from '../styles/Home.module.css';
 
 const Home = () => {
@@ -12,23 +12,9 @@ const Home = () => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [countdown, setCountdown] = useState<number>(30);
   
-  // Payment state
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [txHash, setTxHash] = useState<string>('');
+  // Price state
   const [priceData, setPriceData] = useState<PriceData | null>(null);
   const [isLoadingPrice, setIsLoadingPrice] = useState(true);
-  
-  // Transaction hooks
-  const { 
-    data: hash, 
-    sendTransaction, 
-    isPending, 
-    error 
-  } = useSendTransaction();
-
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-    hash,
-  });
   
   // Wagmi hooks for wallet connection
   const { connect, isPending: isConnecting } = useConnect();
@@ -102,58 +88,15 @@ const Home = () => {
     disconnect();
   };
 
-  const handlePayment = async () => {
-    if (!isConnected || !address) {
-      alert('Please connect your wallet first!');
-      return;
-    }
-
-    if (!priceData) {
-      alert('Price conversion not available. Please try again.');
-      return;
-    }
-
-    try {
-      setIsProcessing(true);
-      setTxHash('');
-
-      // Use real-time ETH amount from price conversion service
-      const ethAmount = priceData.eth;
-      const priceInWei = parseEther(ethAmount.toString());
-
-      console.log(`Initiating payment of ${priceData.usd} USD (${ethAmount} ETH)`);
-      console.log(`Current ETH price: $${priceData.ethUsdPrice}`);
-      console.log(`Transaction will be sent from: ${address} to: ${MERCHANT_ADDRESS}`);
-
-      // Send ETH directly to merchant address
-      await sendTransaction({
-        to: MERCHANT_ADDRESS,
-        value: priceInWei,
-      });
-
-    } catch (err) {
-      console.error('Payment failed:', err);
-      alert(`Payment failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsProcessing(false);
-    }
+  const handlePaymentSuccess = (txHash: string) => {
+    console.log('Payment successful! Transaction hash:', txHash);
+    alert(`Payment successful! Transaction hash: ${txHash}`);
   };
 
-  // Update transaction hash when available
-  useEffect(() => {
-    if (hash) {
-      setTxHash(hash);
-      console.log('Transaction hash:', hash);
-    }
-  }, [hash]);
-
-  // Handle transaction success
-  useEffect(() => {
-    if (isSuccess && txHash) {
-      console.log('Payment successful! Transaction hash:', txHash);
-      alert(`Payment successful! Transaction hash: ${txHash}`);
-    }
-  }, [isSuccess, txHash]);
+  const handlePaymentError = (error: Error) => {
+    console.error('Payment failed:', error);
+    alert(`Payment failed: ${error.message}`);
+  };
 
   // Update the wallet sender address display when connected
   const getWalletDisplay = () => {
@@ -297,64 +240,53 @@ const Home = () => {
             )}
           </div>
           
-            {/* Price Display Section */}
-            {isConnected && priceData && (
-              <div className={styles.priceDisplay}>
-                <div className={styles.priceTitle}>💱 Price Conversion</div>
-                <div className={styles.priceDetails}>
-                  <div><strong>Amazon Price:</strong> {priceConversionService.formatUsdAmount(priceData.usd)}</div>
-                  <div><strong>ETH Amount:</strong> {priceConversionService.formatEthAmount(priceData.eth)}</div>
-                  <div className={styles.ethPrice}>ETH Price: {priceConversionService.formatUsdAmount(priceData.ethUsdPrice)}</div>
-                  <div className={styles.lastUpdated}>Last updated: {priceData.lastUpdated.toLocaleTimeString()}</div>
-                </div>
+          {/* Price Display Section */}
+          {isConnected && priceData && (
+            <div className={styles.priceDisplay}>
+              <div className={styles.priceTitle}>💱 Price Conversion</div>
+              <div className={styles.priceDetails}>
+                <div><strong>Amazon Price:</strong> {priceConversionService.formatUsdAmount(priceData.usd)}</div>
+                <div><strong>ETH Amount:</strong> {priceConversionService.formatEthAmount(priceData.eth)}</div>
+                <div className={styles.ethPrice}>ETH Price: {priceConversionService.formatUsdAmount(priceData.ethUsdPrice)}</div>
+                <div className={styles.lastUpdated}>Last updated: {priceData.lastUpdated.toLocaleTimeString()}</div>
               </div>
-            )}
-            
-            {/* Disconnect Wallet Button - Only show when connected */}
-            {isConnected && (
-              <button 
-                className={styles.disconnectWalletLink}
-                onClick={handleDisconnect}
-                style={{ marginBottom: '15px' }}
-              >
-                Disconnect Wallet
-              </button>
-            )}
+            </div>
+          )}
+          
+          {/* Disconnect Wallet Button - Only show when connected */}
+          {isConnected && (
+            <button 
+              className={styles.disconnectWalletLink}
+              onClick={handleDisconnect}
+              style={{ marginBottom: '15px' }}
+            >
+              Disconnect Wallet
+            </button>
+          )}
           
           {/* Main Button - Changes based on connection state */}
-          <button 
-            className={`${styles.connectWalletButton} ${isConnected ? styles.connectedButton : ''}`}
-            onClick={isConnected ? handlePayment : connectCoinbaseWallet}
-            disabled={isConnecting || isPending || isProcessing || (isConnected && isLoadingPrice)}
-          >
-            {(() => {
-              if (isConnecting) return 'Connecting...';
-              if (isPending || isProcessing) return 'Processing...';
-              if (isConnected && isLoadingPrice) return 'Loading Price...';
-              if (isConnected && !priceData) return 'Price Unavailable';
-              if (isConnected) return 'Place your order';
-              return 'Connect Wallet';
-            })()}
-          </button>
-            
-            {/* Transaction Status Display */}
-            {txHash && (
-              <div className={styles.transactionStatus}>
-                <div className={styles.statusTitle}>Transaction Status:</div>
-                <div className={styles.txHash}>Hash: {txHash}</div>
-                <div className={styles.statusIndicator}>
-                  {isConfirming ? '⏳ Confirming...' : isSuccess ? '✅ Confirmed!' : '⏳ Pending...'}
-                </div>
-              </div>
-            )}
-            
-            {/* Error Display */}
-            {error && (
-              <div className={styles.errorDisplay}>
-                Error: {error.message}
-              </div>
-            )}
-          </div>
+          {!isConnected ? (
+            <button 
+              className={`${styles.connectWalletButton} ${isConnected ? styles.connectedButton : ''}`}
+              onClick={connectCoinbaseWallet}
+              disabled={isConnecting}
+            >
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+            </button>
+          ) : (
+            /* Payment Button Component - Only show when connected and price data is available */
+            priceData && (
+              <PaymentButton
+                amount={priceData.eth}
+                merchantAddress={MERCHANT_ADDRESS}
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+                disabled={isLoadingPrice}
+                className={styles.paymentButtonContainer}
+              />
+            )
+          )}
+        </div>
       </main>
     </div>
   );

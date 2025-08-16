@@ -331,6 +331,14 @@
   background: #E6B800;
 }
 
+/* Payment Button Container */
+.paymentButtonContainer {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+}
+
 /* Transaction Status Display */
 .transactionStatus {
   margin-top: 15px;
