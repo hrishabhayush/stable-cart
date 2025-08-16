@@ -19,6 +19,6 @@
     "baseUrl": ".",
     "noEmitOnError": false
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/server.ts", "src/database.ts"],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/**/__tests__/**/*", "src/routes/**/*"]
 }
