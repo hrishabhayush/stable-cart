@@ -283,16 +283,42 @@ import { paymentModal } from './payment-modal';
       }
     },
 
+    // Get product quantity from Amazon page
+    getProductQuantity(): number {
+      const quantitySelector = '#lineItemQuantity_bWlxOi8vZG9jdW1lbnQ6MS4wL09yZGVyaW5nL2FtYXpvbjoxLjAvTGluZUl0ZW06MS4wLzUyY2RiOGY1LWM1OGUtNDFhMi1hODJlLTNhN2M4YjkyZTRkZg\\=\\= > div.a-declarative > span:nth-child(2)';
+      const quantityElement = document.querySelector(quantitySelector);
+      
+      if (quantityElement?.textContent) {
+        const quantityText = quantityElement.textContent.trim();
+        console.log('Found quantity:', quantityText);
+        
+        // Extract numeric value from quantity text (e.g., "1" -> 1)
+        const quantityMatch = quantityText.match(/(\d+)/);
+        if (quantityMatch) {
+          const quantity = parseInt(quantityMatch[1], 10);
+          if (!isNaN(quantity) && quantity > 0) {
+            console.log('Successfully extracted quantity:', quantity);
+            return quantity;
+          }
+        }
+      }
+
+      console.log('No quantity found, using default quantity 1');
+      return 1; // Default quantity
+    },
+
     // Extract product information from current Amazon page
     extractProductInfo() {
       const productTitle = this.getProductTitle();
       const productPrice = this.getProductPrice();
+      const productQuantity = this.getProductQuantity();
       const productImage = this.getProductImage();
       const amazonUrl = window.location.href;
 
       return {
         title: productTitle,
         price: productPrice,
+        quantity: productQuantity,
         image: productImage,
         amazonUrl: amazonUrl
       };
@@ -300,6 +326,17 @@ import { paymentModal } from './payment-modal';
 
     // Get product title from Amazon page
     getProductTitle(): string {
+      // First, try the specific selector for checkout item title
+      const titleSelector = '#bWlxOi8vZG9jdW1lbnQ6MS4wL09yZGVyaW5nL2FtYXpvbjoxLjAvTGluZUl0ZW06MS4wLzcyNDNjYTBhLWViMGMtNGI2Ny04YzlkLWEwZGQ2MjI2NDM4ZQ\\=\\= > div > span > div.a-row.a-spacing-base.product-image-description-row > div.a-column.a-span8.product-description-column.a-span-last > span';
+      const titleElement = document.querySelector(titleSelector);
+      
+      if (titleElement?.textContent) {
+        const title = titleElement.textContent.trim();
+        console.log('Found title using specific selector:', title);
+        return title;
+      }
+
+      // Fallback to other selectors if the specific one doesn't work
       const selectors = [
         '#productTitle',
         'h1[data-automation-id="product-title"]',
