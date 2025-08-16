@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Amazon Crypto Checkout",
+  "name": "Stable Cart Crypto Checkout",
   "version": "1.0.0",
-  "description": "Adds crypto checkout option to Amazon checkout pages",
+  "description": "Adds crypto checkout option to e-commerce checkout pages",
   "permissions": [
     "activeTab",
     "scripting",
@@ -32,13 +32,13 @@
     }
   ],
   "icons": {
-    "16": "icons/amazon.svg",
-    "48": "icons/amazon.svg",
-    "128": "icons/amazon.svg"
+    "16": "icons/C.E.Icon.png",
+    "48": "icons/C.E.Icon.png",
+    "128": "icons/C.E.Icon.png"
   },
 
   "action": {
-    "default_title": "Amazon Crypto Checkout",
+    "default_title": "Stable Cart Crypto Checkout",
     "default_popup": "popup.html"
   }
 } 

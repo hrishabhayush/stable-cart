@@ -39,7 +39,6 @@ const Home: NextPage = () => {
           content="Complete your Amazon purchase with cryptocurrency"
           name="description"
         />
-        <link href="/favicon.ico" rel="icon" />
       </Head>
 
       <main className={styles.main}>
