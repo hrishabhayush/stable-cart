@@ -7,7 +7,7 @@
     "dev": "webpack --mode=development --watch",
     "build": "pnpm run build:all && webpack --mode=production",
     "build:all": "pnpm -r run build",
-    "clean": "rm -rf dist && pnpm -r run clean",
+    "clean": "rm -rf apps/dist && pnpm -r run clean",
     "lint": "pnpm -r run lint",
     "test": "pnpm -r run test",
     "type-check": "pnpm -r run type-check"

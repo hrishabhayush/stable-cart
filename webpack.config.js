@@ -5,7 +5,6 @@ module.exports = {
   entry: {
     content: './apps/extension/src/content.ts',
     popup: './apps/extension/src/popup.ts',
-    background: './apps/extension/src/background.ts'
   },
   module: {
     rules: [
