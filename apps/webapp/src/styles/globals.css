@@ -1,0 +1,33 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure RainbowKit doesn't override your custom styling */
+[data-rk] {
+  /* This prevents RainbowKit from applying default styles to your custom components */
+}
+
+/* Override any RainbowKit default button styles that might interfere */
+[data-rk] button:not([data-testid]) {
+  /* Only target RainbowKit's own buttons, not your custom ones */
+}
+
+/* Use higher specificity to ensure your custom styles take precedence */
+.container .main .priceButton,
+.container .main .customConnectButton,
+.container .main .urlDisplay {
+  /* Your custom styles will have higher priority */
+}

@@ -11,12 +11,12 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "apps/src",
+    "rootDir": "apps/extension/src",
     "lib": ["ES2020", "DOM"],
     "types": ["chrome"]
   },
   "include": [
-    "apps/src/**/*"
+    "apps/extension/src/**/*"
   ],
   "exclude": [
     "node_modules",

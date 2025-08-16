@@ -5,9 +5,12 @@
   "private": true,
   "scripts": {
     "dev": "webpack --mode=development --watch",
-    "build": "pnpm run build:all && webpack --mode=production",
-    "build:all": "pnpm -r run build",
-    "clean": "rm -rf dist && pnpm -r run clean",
+    "build": "pnpm run build:all && webpack --mode=production && pnpm run deploy:webapp",
+    "build:all": "pnpm --filter=!stablecart-webapp -r run build",
+    "deploy:webapp": "cd apps/webapp && vercel --prod --yes",
+    "deploy:webapp:only": "cd apps/webapp && vercel --prod --yes",
+    "get:webapp:url": "cd apps/webapp && vercel ls | grep 'Production' | head -1 | awk '{print $2}'",
+    "clean": "rm -rf apps/dist && pnpm -r run clean",
     "lint": "pnpm -r run lint",
     "test": "pnpm -r run test",
     "type-check": "pnpm -r run type-check"
@@ -15,17 +18,28 @@
   "devDependencies": {
     "@types/chrome": "^0.0.260",
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.0",
+    "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.55.0",
     "prettier": "^3.1.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.0",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4",
-    "copy-webpack-plugin": "^11.0.0",
-    "ts-loader": "^9.5.1"
+    "webpack-cli": "^5.1.4"
   },
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0"
-} 
+  "packageManager": "pnpm@8.15.0",
+  "dependencies": {
+    "@coinbase/wallet-sdk": "^4.3.7",
+    "@metamask/sdk": "^0.33.0",
+    "@metamask/sdk-react": "^0.33.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "ethers": "^6.15.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "web3": "^4.16.0"
+  }
+}

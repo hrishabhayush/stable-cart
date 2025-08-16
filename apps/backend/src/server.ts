@@ -1,12 +1,12 @@
-import express from 'express';
+import express, { Express } from 'express';
 import cors from 'cors';
 import { Database } from 'sqlite3';
 import { initializeDatabase } from './database';
 import { giftCodeRoutes, setGiftCodeService } from './routes/admin/giftCodes';
 import { GiftCodeInventoryService } from './services/GiftCodeInventoryService';
 
-const app = express();
-const PORT = process.env.PORT || 65535;
+const app: Express = express();
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());

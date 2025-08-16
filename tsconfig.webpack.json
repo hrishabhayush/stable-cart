@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./apps/dist",
+    "rootDir": "./apps/extension/src"
+  },
+  "include": [
+    "apps/extension/src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "apps/backend/**/*",
+    "packages/**/*"
+  ]
+}
+
