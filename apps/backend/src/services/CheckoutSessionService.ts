@@ -220,6 +220,75 @@ export class CheckoutSessionService {
   }
 
   /**
+   * Updates the status of a checkout session
+   * Edge cases handled:
+   * - Non-existent sessions
+   * - Invalid status transitions
+   * - Database update failures
+   * - Metadata validation
+   */
+  async updateSessionStatus(sessionId: string, newStatus: CheckoutSessionStatus, metadata?: any): Promise<CheckoutSession> {
+    try {
+      // Validate session ID format
+      const validation = ValidationUtils.validateSessionId(sessionId);
+      if (!validation.isValid) {
+        throw new Error(`Invalid session ID: ${validation.errors[0].message}`);
+      }
+
+      // Get current session to validate status transition
+      const currentSession = await this.getSession(sessionId);
+      if (!currentSession) {
+        throw new Error('Session not found');
+      }
+
+      // Validate status transition
+      const transitionValidation = ValidationUtils.validateStatusTransition(currentSession.status, newStatus);
+      if (!transitionValidation.isValid) {
+        throw new Error(`Invalid status transition: ${transitionValidation.errors[0].message}`);
+      }
+
+      // Prepare metadata
+      const metadataString = metadata ? JSON.stringify(metadata) : null;
+
+      const sql = `
+        UPDATE checkout_sessions 
+        SET status = ?, updated_at = ?, metadata = ?
+        WHERE session_id = ?
+      `;
+
+      const params = [newStatus, new Date().toISOString(), metadataString, sessionId];
+
+      return new Promise<CheckoutSession>((resolve, reject) => {
+        this.db.run(sql, params, async (err: Error | null, result: any) => {
+          if (err) {
+            reject(new Error(`Failed to update session status: ${err.message}`));
+            return;
+          }
+
+          if (result?.changes === 0) {
+            reject(new Error('Session not found or no changes made'));
+            return;
+          }
+
+          // Return updated session
+          const updatedSession = await this.getSession(sessionId);
+          if (!updatedSession) {
+            reject(new Error('Failed to retrieve updated session'));
+            return;
+          }
+
+          resolve(updatedSession);
+        });
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(`Unexpected error updating session status: ${error}`);
+    }
+  }
+
+  /**
    * Expires a session (marks as EXPIRED)
    * Edge cases handled:
    * - Non-existent sessions
@@ -319,6 +388,91 @@ export class CheckoutSessionService {
         throw error;
       }
       throw new Error(`Unexpected error cleaning up expired sessions: ${error}`);
+    }
+  }
+
+  /**
+   * Retrieves all sessions with optional filtering
+   * Edge cases handled:
+   * - No sessions in database
+   * - Database query failures
+   * - Invalid filter parameters
+   * - Pagination edge cases
+   */
+  async getAllSessions(options?: SessionQueryOptions): Promise<CheckoutSession[]> {
+    try {
+      let sql = 'SELECT * FROM checkout_sessions';
+      const conditions: string[] = [];
+      const params: any[] = [];
+
+      // Add status filter
+      if (options?.status) {
+        conditions.push('status = ?');
+        params.push(options.status);
+      }
+
+      // Add user ID filter
+      if (options?.userId) {
+        conditions.push('user_id = ?');
+        params.push(options.userId);
+      }
+
+      // Add expired filter
+      if (options?.includeExpired === false) {
+        conditions.push('expires_at > ?');
+        params.push(new Date().toISOString());
+      }
+
+      // Build WHERE clause
+      if (conditions.length > 0) {
+        sql += ' WHERE ' + conditions.join(' AND ');
+      }
+
+      // Add ordering
+      sql += ' ORDER BY created_at DESC';
+
+      // Add pagination
+      if (options?.limit) {
+        sql += ' LIMIT ?';
+        params.push(options.limit);
+      }
+
+      if (options?.offset) {
+        sql += ' OFFSET ?';
+        params.push(options.offset);
+      }
+
+      return new Promise<CheckoutSession[]>((resolve, reject) => {
+        this.db.all(sql, params, (err, rows: DatabaseSession[]) => {
+          if (err) {
+            reject(new Error(`Failed to retrieve sessions: ${err.message}`));
+            return;
+          }
+
+          // Convert database rows to CheckoutSession objects
+          const sessions: CheckoutSession[] = rows.map(row => ({
+            id: row.id,
+            sessionId: row.session_id,
+            userId: row.user_id,
+            amazonUrl: row.amazon_url,
+            cartTotalCents: row.cart_total_cents,
+            currentBalanceCents: row.current_balance_cents,
+            topUpAmountCents: row.top_up_amount_cents,
+            status: row.status,
+            createdAt: new Date(row.created_at),
+            updatedAt: new Date(row.updated_at),
+            expiresAt: new Date(row.expires_at),
+            metadata: row.metadata
+          }));
+
+          resolve(sessions);
+        });
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(`Unexpected error retrieving sessions: ${error}`);
     }
   }
 

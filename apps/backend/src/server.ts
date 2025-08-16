@@ -4,6 +4,8 @@ import { Database } from 'sqlite3';
 import { initializeDatabase } from './database';
 import { giftCodeRoutes, setGiftCodeService } from './routes/admin/giftCodes';
 import { GiftCodeInventoryService } from './services/GiftCodeInventoryService';
+import checkoutSessionRoutes, { setCheckoutSessionService } from './routes/checkoutSessions';
+import { CheckoutSessionService } from './services/CheckoutSessionService';
 
 const app = express();
 const PORT = process.env.PORT || 65535;
@@ -26,10 +28,20 @@ async function startServer() {
     const giftCodeService = new GiftCodeInventoryService(db);
     console.log('✅ Service created, setting service...');
     setGiftCodeService(giftCodeService);
-    console.log('✅ Service set, adding routes...');
+    
+    // Initialize the checkout session service with our database
+    const checkoutSessionService = new CheckoutSessionService(db);
+    console.log('✅ Checkout session service created, setting service...');
+    setCheckoutSessionService(checkoutSessionService);
+    
+    console.log('✅ Services set, adding routes...');
     
     // Admin routes
     app.use('/api/admin/gift-codes', giftCodeRoutes);
+    
+    // Checkout session routes
+    app.use('/api/checkout-sessions', checkoutSessionRoutes);
+    
     console.log('✅ Routes added, setting up endpoints...');
 
     // Health check endpoint
