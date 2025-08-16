@@ -9,15 +9,15 @@ import {
 } from 'wagmi/chains';
 
 export const config = getDefaultConfig({
-  appName: 'RainbowKit App',
-  projectId: 'YOUR_PROJECT_ID',
+  appName: 'Amazon Crypto Checkout',
+  projectId: 'amazon-crypto-checkout-extension',
   chains: [
+    sepolia, // Prioritize Sepolia for testing
     mainnet,
     polygon,
     optimism,
     arbitrum,
     base,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [sepolia] : []),
   ],
   ssr: true,
 });

@@ -100,3 +100,140 @@
     flex-direction: column;
   }
 }
+
+/* Price Button Styles */
+.priceButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+  margin-top: 2rem;
+}
+
+.priceButton {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border: none;
+  padding: 20px 40px;
+  border-radius: 15px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.priceButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+  background: linear-gradient(135deg, #e085e8 0%, #e04a5f 100%);
+}
+
+.priceButton:active {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+.priceAmount {
+  font-size: 32px;
+  font-weight: 800;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.priceLabel {
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 600px) {
+  .priceButton {
+    padding: 16px 32px;
+    min-width: 180px;
+  }
+  
+  .priceAmount {
+    font-size: 28px;
+  }
+  
+  .priceLabel {
+    font-size: 12px;
+  }
+}
+
+/* URL Display Styles */
+.urlDisplay {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  max-width: 600px;
+  word-break: break-all;
+}
+
+.urlText {
+  color: #000000;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Custom Connect Button Styles - Full control, no RainbowKit interference */
+.connectButtonContainer {
+  margin: 30px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.customConnectButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-width: 200px;
+  text-align: center;
+}
+
+.customConnectButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.customConnectButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.customConnectButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+/* Payment Button Container Styles */
+.paymentButtonContainer {
+  margin: 30px 0;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}

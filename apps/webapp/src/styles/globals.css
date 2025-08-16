@@ -14,3 +14,20 @@ a {
 * {
   box-sizing: border-box;
 }
+
+/* Ensure RainbowKit doesn't override your custom styling */
+[data-rk] {
+  /* This prevents RainbowKit from applying default styles to your custom components */
+}
+
+/* Override any RainbowKit default button styles that might interfere */
+[data-rk] button:not([data-testid]) {
+  /* Only target RainbowKit's own buttons, not your custom ones */
+}
+
+/* Use higher specificity to ensure your custom styles take precedence */
+.container .main .priceButton,
+.container .main .customConnectButton,
+.container .main .urlDisplay {
+  /* Your custom styles will have higher priority */
+}
