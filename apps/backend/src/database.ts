@@ -28,15 +28,15 @@ export function initializeDatabase(db: Database): Promise<void> {
       db.run(`
         CREATE TABLE IF NOT EXISTS gift_code_inventory (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          denomination_cents INTEGER NOT NULL,
-          code_masked TEXT NOT NULL,
-          ciphertext TEXT NOT NULL,
-          nonce TEXT NOT NULL,
-          status TEXT CHECK(status IN ('AVAILABLE', 'ALLOCATED', 'USED')) DEFAULT 'AVAILABLE',
-          allocated_to_session INTEGER,
-          purchased_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          allocated_at DATETIME,
-          FOREIGN KEY (allocated_to_session) REFERENCES checkout_sessions(id)
+          code TEXT NOT NULL UNIQUE,
+          denomination INTEGER NOT NULL,
+          status TEXT CHECK(status IN ('AVAILABLE', 'ALLOCATED', 'REDEEMED', 'EXPIRED', 'FAILED')) DEFAULT 'AVAILABLE',
+          encrypted_code TEXT NOT NULL,
+          encryption_key TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          expires_at DATETIME NOT NULL,
+          metadata TEXT
         )
       `, (err) => {
         if (err) {
@@ -44,7 +44,7 @@ export function initializeDatabase(db: Database): Promise<void> {
           return;
         }
 
-        // Create redemptions table
+        // Create redemptions table (simplified for now)
         db.run(`
           CREATE TABLE IF NOT EXISTS redemptions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,9 +54,7 @@ export function initializeDatabase(db: Database): Promise<void> {
             remainder_cents INTEGER DEFAULT 0,
             redeemed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             amazon_balance_before INTEGER NOT NULL,
-            amazon_balance_after INTEGER NOT NULL,
-            FOREIGN KEY (session_id) REFERENCES checkout_sessions(id),
-            FOREIGN KEY (inventory_item_id) REFERENCES gift_code_inventory(id)
+            amazon_balance_after INTEGER NOT NULL
           )
         `, (err) => {
           if (err) {
@@ -83,7 +81,7 @@ export function initializeDatabase(db: Database): Promise<void> {
                   return;
                 }
 
-                db.run(`CREATE INDEX IF NOT EXISTS idx_inventory_denomination ON gift_code_inventory(denomination_cents)`, (err) => {
+                db.run(`CREATE INDEX IF NOT EXISTS idx_inventory_denomination ON gift_code_inventory(denomination)`, (err) => {
                   if (err) {
                     reject(err);
                     return;
