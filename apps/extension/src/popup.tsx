@@ -396,26 +396,14 @@ const CryptoCheckoutPopupContent: React.FC = () => {
           alignItems: 'center',
           gap: '12px'
         }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            background: '#FFFFFF',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 'bold',
-            color: '#232F3E',
-            fontSize: '18px'
-          }}>
-            a$
-          </div>
+          <img src="icons/Amazonbutton.svg" alt="Amazon Logo" style={{ width: '32px', height: '32px' }} />
           <div style={{
             color: '#FFFFFF',
             fontSize: '18px',
-            fontWeight: 700
+            fontWeight: 400,
+            alignSelf: 'center'
           }}>
-            Checkout with crypto
+            Crypto Checkout
           </div>
         </div>
         <div 
