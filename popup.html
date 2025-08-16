@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amazon Crypto Checkout</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .logo {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 10px;
+      background: #232F3E;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      color: #232F3E;
+    }
+    
+    .status {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .status-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #495057;
+    }
+    
+    .status-text {
+      color: #6c757d;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .feature-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #e9ecef;
+      color: #495057;
+      font-size: 14px;
+    }
+    
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+    
+    .feature-list li::before {
+      content: "✓";
+      color: #28a745;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #e9ecef;
+      color: #6c757d;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">₿</div>
+    <h1>Amazon Crypto Checkout</h1>
+  </div>
+  
+  <div class="status">
+    <div class="status-title">Extension Status</div>
+    <div class="status-text" id="status-text">
+      Ready to enhance your Amazon checkout experience with crypto payments.
+    </div>
+  </div>
+  
+  <ul class="feature-list">
+    <li>Auto-detects Amazon checkout pages</li>
+    <li>Injects crypto checkout button</li>
+    <li>Adds crypto wallet to payment method dropdown</li>
+    <li>Matches Amazon's design perfectly</li>
+    <li>Works across all Amazon domains</li>
+  </ul>
+  
+  <div class="footer">
+    Version 1.0.0 • Made with ❤️
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html> 

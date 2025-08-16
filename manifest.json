@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Amazon Crypto Checkout",
+  "version": "1.0.0",
+  "description": "Adds crypto checkout option to Amazon checkout pages",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.amazon.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.amazon.com/*",
+        "https://*.amazon.co.uk/*",
+        "https://*.amazon.de/*",
+        "https://*.amazon.fr/*",
+        "https://*.amazon.it/*",
+        "https://*.amazon.es/*",
+        "https://*.amazon.ca/*",
+        "https://*.amazon.com.au/*",
+        "https://*.amazon.co.jp/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icons/amazon.svg",
+    "48": "icons/amazon.svg",
+    "128": "icons/amazon.svg"
+  },
+  "action": {
+    "default_title": "Amazon Crypto Checkout",
+    "default_popup": "popup.html"
+  }
+} 
