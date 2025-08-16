@@ -1,14 +1,14 @@
-# StableCart Backend - Person 2 Implementation
+# StableCart Backend
 
 ## Overview
 This is the backend service for StableCart, handling order management, Amazon integration, and gift code inventory. Built with Express.js, TypeScript, and SQLite.
 
 ## Features
-- **Order Management**: Complete checkout session lifecycle
-- **Gift Code Inventory**: Encrypted storage and allocation
-- **Real-time Updates**: Server-Sent Events for extension communication
-- **Webhook Processing**: Payment confirmation handling
-- **RESTful API**: Clean endpoints for all operations
+- Order Management: Complete checkout session lifecycle
+- Gift Code Inventory: Encrypted storage and allocation
+- Real-time Updates: Server-Sent Events for extension communication
+- Webhook Processing: Payment confirmation handling
+- RESTful API: Clean endpoints for all operations
 
 ## Quick Start
 
@@ -122,21 +122,12 @@ Create a `.env` file based on `.env.example`:
 
 ## Next Steps
 
-1. **Implement Core Services**: CheckoutSession, GiftCodeInventory, Quote
-2. **Add API Routes**: RESTful endpoints for all operations
-3. **Webhook Integration**: Connect with Person 1's payment system
-4. **Real-time Updates**: Implement SSE for extension communication
-5. **Testing**: Comprehensive test coverage for all services
-
-## Person 2 Responsibilities
-
-- ✅ **Order Management**: Session lifecycle and state machine
-- ✅ **Amazon Integration**: Gift code application and checkout
-- ✅ **Gift Code Inventory**: Encrypted storage and allocation
-- ✅ **Real-time Updates**: SSE for extension communication
-- ✅ **Webhook Processing**: Payment confirmation handling
+1. Implement Core Services: CheckoutSession, GiftCodeInventory, Quote
+2. Add API Routes: RESTful endpoints for all operations
+3. Webhook Integration: Connect with payment system
+4. Real-time Updates: Implement SSE for extension communication
+5. Testing: Comprehensive test coverage for all services
 
 ---
 
 **Built for ETHGlobal New York 2025 Hackathon**
-**Person 2 Implementation - Order Management + Amazon Integration**
