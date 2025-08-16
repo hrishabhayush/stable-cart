@@ -357,26 +357,46 @@ import { paymentModal } from './payment-modal';
 
     // Get product price from Amazon page
     getProductPrice(): number {
-      // First, try the specific selector for subtotals table
+      // First, check if there are gift cards or deductions (look for line item 7)
+      const giftCardSelector = '#subtotals-marketplace-table > li:nth-child(6) > span > div > div.order-summary-line-definition';
+      const giftCardElement = document.querySelector(giftCardSelector);
+      
+      // If gift card/deduction exists, use line 7 for total
+      if (giftCardElement?.textContent) {
+        const totalText = giftCardElement.textContent.trim();
+        console.log('Found total with gift cards/deductions:', totalText);
+        
+        // Extract numeric value from total text (e.g., "$13.65" -> 13.65)
+        const totalMatch = totalText.match(/[\$£€]?([\d,]+\.?\d*)/);
+        if (totalMatch) {
+          const total = parseFloat(totalMatch[1].replace(/,/g, ''));
+          if (!isNaN(total) && total > 0) {
+            console.log('Successfully extracted total with deductions:', total);
+            return total;
+          }
+        }
+      }
+
+      // If no gift cards/deductions, use the standard subtotal (line 4)
       const subtotalSelector = '#subtotals-marketplace-table > li:nth-child(4) > span > div > div.order-summary-line-definition';
       const subtotalElement = document.querySelector(subtotalSelector);
       
       if (subtotalElement?.textContent) {
         const priceText = subtotalElement.textContent.trim();
-        console.log('Found price in subtotals table:', priceText);
+        console.log('Found price in subtotals table (no deductions):', priceText);
         
         // Extract numeric value from price text (e.g., "$13.65" -> 13.65)
         const priceMatch = priceText.match(/[\$£€]?([\d,]+\.?\d*)/);
         if (priceMatch) {
           const price = parseFloat(priceMatch[1].replace(/,/g, ''));
           if (!isNaN(price) && price > 0) {
-            console.log('Successfully extracted price:', price);
+            console.log('Successfully extracted price (no deductions):', price);
             return price;
           }
         }
       }
 
-      // Fallback to other selectors if the specific one doesn't work
+      // Fallback to other selectors if the specific ones don't work
       const selectors = [
         '.a-price .a-offscreen',
         '[data-testid="price"] .a-offscreen',
