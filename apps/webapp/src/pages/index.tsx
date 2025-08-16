@@ -249,7 +249,9 @@ const Home = () => {
           {/* Connection Info Footer */}
           <div className={styles.connectionInfo}>
             {isConnected ? (
-              <span className={styles.connectionLabel}>Connected to: </span>
+              // Don't show "Connected to:" text when wallet is connected
+              // The disconnect button in PaymentButton already shows connection status
+              null
             ) : (
               <>
                 <span className={styles.connectionLabel}>Connecting through: </span>

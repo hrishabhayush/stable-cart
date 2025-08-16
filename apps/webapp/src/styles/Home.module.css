@@ -145,12 +145,12 @@
   background: #FFFFFF;
   border-radius: 5px;
   border: 1px solid rgba(35, 47, 62, 0.49);
-  padding: 20px;
-  height: 280px;
+  padding: 12px 20px 20px 20px; /* Reduced top padding from 20px to 15px */
+  height: 270px; /* Reduced from 280px to move lower edge up */
 }
 
 .section {
-  margin-bottom: 20px;
+  margin-bottom: 18px; /* Reduced from 20px to tighten spacing */
 }
 
 .section:last-child {
@@ -163,14 +163,14 @@
   font-size: 12px;
   line-height: 1.197;
   color: #000000;
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0; /* Reduced from 12px to tighten spacing */
 }
 
 .infoRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Reduced from 8px to tighten spacing */
   font-family: 'Amazon Ember Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 400;
   font-size: 12px;
@@ -224,14 +224,14 @@
 .sectionSeparator {
   height: 1px;
   background-color: rgba(0, 0, 0, 0.15);
-  margin: 12px 0;
+  margin: 8px 0; /* Reduced from 12px to tighten spacing */
   width: 100%;
 }
 
 /* Connection Info Footer */
 .connectionInfo {
   position: absolute;
-  top: 590px;
+  top: 570px; /* Reduced from 590px to account for smaller container */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
