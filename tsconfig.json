@@ -16,9 +16,7 @@
     "types": ["chrome"]
   },
   "include": [
-    "apps/extension/src/**/*",
-    "apps/src/**/*",
-    "apps/backend/src/**/*"
+    "apps/extension/src/**/*"
   ],
   "exclude": [
     "node_modules",

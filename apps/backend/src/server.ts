@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { Express } from 'express';
 import cors from 'cors';
 import { Database } from 'sqlite3';
 import { initializeDatabase } from './database';
 
-const app = express();
+const app: Express = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
