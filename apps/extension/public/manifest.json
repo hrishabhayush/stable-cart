@@ -5,10 +5,11 @@
   "description": "Adds crypto checkout option to Amazon checkout pages",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "host_permissions": [
-    "https://*.amazon.com/*"
+    "https://*.amazon.*/*"
   ],
   "content_scripts": [
     {
@@ -31,6 +32,9 @@
     "16": "icons/amazon.svg",
     "48": "icons/amazon.svg",
     "128": "icons/amazon.svg"
+  },
+  "background": {
+    "service_worker": "background.js"
   },
   "action": {
     "default_title": "Amazon Crypto Checkout",
