@@ -5,6 +5,7 @@ import { coinbaseWallet } from 'wagmi/connectors';
 import { priceConversionService, PriceData } from '../services/priceConversion';
 import { getMerchantAddress } from '../config/merchant';
 import PaymentButton from '../components/PaymentButton';
+import CongratulationPage from '../components/CongratulationPage';
 import styles from '../styles/Home.module.css';
 
 const Home = () => {
@@ -16,6 +17,10 @@ const Home = () => {
   // Price state
   const [priceData, setPriceData] = useState<PriceData | null>(null);
   const [isLoadingPrice, setIsLoadingPrice] = useState(true);
+  
+  // Congratulation page state
+  const [showCongratulation, setShowCongratulation] = useState(false);
+  const [transactionHash, setTransactionHash] = useState<string>('');
   
   // Wagmi hooks for wallet connection
   const { connect, isPending: isConnecting } = useConnect();
@@ -91,7 +96,19 @@ const Home = () => {
 
   const handlePaymentSuccess = (txHash: string) => {
     console.log('Payment successful! Transaction hash:', txHash);
-    alert(`Payment successful! Transaction hash: ${txHash}`);
+    // Remove the alert - just log the success
+  };
+
+  const handleShowCongratulation = (txHash: string) => {
+    setTransactionHash(txHash);
+    setShowCongratulation(true);
+  };
+
+  const handleRedirectNow = () => {
+    // Redirect back to Amazon or close the window
+    window.close();
+    // Fallback: redirect to Amazon homepage
+    window.location.href = 'https://www.amazon.com';
   };
 
   const handlePaymentError = (error: Error) => {
@@ -121,6 +138,18 @@ const Home = () => {
 
   // Debug logging for wallet connection state
   console.log('Wallet connection state:', { isConnected, address });
+
+  // Show congratulation page if transaction was successful
+  if (showCongratulation) {
+    return (
+      <CongratulationPage
+        senderAddress={address || ''}
+        receiverAddress={MERCHANT_ADDRESS}
+        transactionHash={transactionHash}
+        onRedirectNow={handleRedirectNow}
+      />
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -264,6 +293,7 @@ const Home = () => {
             merchantAddress={MERCHANT_ADDRESS}
             onPaymentSuccess={handlePaymentSuccess}
             onPaymentError={handlePaymentError}
+            onShowCongratulation={handleShowCongratulation}
             disabled={isLoadingPrice}
             className={styles.paymentButtonContainer}
           />

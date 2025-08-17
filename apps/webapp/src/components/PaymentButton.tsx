@@ -10,6 +10,7 @@ interface PaymentButtonProps {
   merchantAddress: `0x${string}`;
   onPaymentSuccess?: (txHash: string) => void;
   onPaymentError?: (error: Error) => void;
+  onShowCongratulation?: (txHash: string) => void;
   disabled?: boolean;
   className?: string;
 }
@@ -19,6 +20,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   merchantAddress,
   onPaymentSuccess,
   onPaymentError,
+  onShowCongratulation,
   disabled = false,
   className = ''
 }) => {
@@ -52,7 +54,6 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   useEffect(() => {
     if (hash) {
       setTxHash(hash);
-      console.log('Transaction hash:', hash);
     }
   }, [hash]);
 
@@ -61,8 +62,13 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     if (hash) {
       console.log('Transaction hash:', hash);
       onPaymentSuccess?.(hash);
+      
+      // Show processing state for 3 seconds, then show congratulation page
+      setTimeout(() => {
+        onShowCongratulation?.(hash);
+      }, 3000);
     }
-  }, [hash, onPaymentSuccess]);
+  }, [hash, onPaymentSuccess, onShowCongratulation]);
 
   // Check for transaction confirmation
   useEffect(() => {
@@ -177,7 +183,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     if (isSending || isConfirming) return (
       <span>
         Processing
-        <span className="loadingDots"></span>
+        <span className="loadingDotsSequential"></span>
       </span>
     );
     if (!isConnected) return 'Connect to wallet';
