@@ -12,7 +12,6 @@ const Home = () => {
   const [productPrice, setProductPrice] = useState<number>(29.99);
   const [productTitle, setProductTitle] = useState<string>('Amazon Basics 4K Fire TV Stick');
   const [currentTime, setCurrentTime] = useState<string>('');
-  const [countdown, setCountdown] = useState<number>(30);
   
   // Price state
   const [priceData, setPriceData] = useState<PriceData | null>(null);
@@ -83,14 +82,8 @@ const Home = () => {
       }));
     }, 1000);
 
-    // Update countdown every second
-    const countdownInterval = setInterval(() => {
-      setCountdown(prev => prev > 0 ? prev - 1 : 60);
-    }, 1000);
-
     return () => {
       clearInterval(timeInterval);
-      clearInterval(countdownInterval);
     };
   }, []);
 
@@ -162,9 +155,9 @@ const Home = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>Stable Cart</title>
+        <title>Primer - Crypto Checkout</title>
         <meta
-          content="Connect your wallet to Stable Cart"
+          content="Connect your wallet to Primer"
           name="description"
         />
       </Head>
@@ -245,7 +238,7 @@ const Home = () => {
               <h3 className={styles.sectionSubtitle}>Price Information</h3>
               
               <div className={styles.timestampInfo}>
-                Last updated: {currentTime}, next refresh in {countdown} seconds
+                Last updated: {currentTime}
               </div>
               
               <div className={styles.infoRow}>

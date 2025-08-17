@@ -14,21 +14,6 @@ const CongratulationPage: React.FC<CongratulationPageProps> = ({
   transactionHash,
   onRedirectNow
 }) => {
-  const [countdown, setCountdown] = useState(100);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          onRedirectNow();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 10000);
-
-    return () => clearInterval(timer);
-  }, [onRedirectNow]);
 
   const formatAddress = (address: string) => {
     if (address.length <= 12) return address;
@@ -55,7 +40,7 @@ const CongratulationPage: React.FC<CongratulationPageProps> = ({
         <h2 className={styles.congratulationTitle}>Congratulations,</h2>
         
         <div className={styles.congratulationMessage}>
-          The transaction has been confirmed. Automatically redirecting back to Amazon in {countdown} seconds.
+          The transaction has been confirmed.
         </div>
 
         {/* Transaction Details */}

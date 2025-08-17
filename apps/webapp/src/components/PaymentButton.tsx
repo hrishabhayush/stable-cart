@@ -44,11 +44,12 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 
   // Transaction state
   const [txHash, setTxHash] = useState<string>('');
+  const [isPostVerificationProcessing, setIsPostVerificationProcessing] = useState(false);
 
   // Update disabled state based on props and processing state
   useEffect(() => {
-    setIsDisabled(disabled || isSending || isConfirming || (isConnected && isEstimatingGas) || (isConnected && !gasEstimate));
-  }, [disabled, isSending, isConfirming, isEstimatingGas, gasEstimate, isConnected]);
+    setIsDisabled(disabled || isSending || isConfirming || isPostVerificationProcessing || (isConnected && isEstimatingGas) || (isConnected && !gasEstimate));
+  }, [disabled, isSending, isConfirming, isPostVerificationProcessing, isEstimatingGas, gasEstimate, isConnected]);
 
   // Update transaction hash when available
   useEffect(() => {
@@ -62,20 +63,23 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     if (hash) {
       console.log('Transaction hash:', hash);
       onPaymentSuccess?.(hash);
+    }
+  }, [hash, onPaymentSuccess]);
+
+  // Check for transaction confirmation and show congratulation page
+  useEffect(() => {
+    if (isSuccess && hash) {
+      console.log('Transaction confirmed!');
+      setIsPostVerificationProcessing(true);
       
-      // Show processing state for 3 seconds, then show congratulation page
+      // Show processing state for 1.5 seconds, then show congratulation page
       setTimeout(() => {
         onShowCongratulation?.(hash);
-      }, 3000);
+      }, 1500);
     }
-  }, [hash, onPaymentSuccess, onShowCongratulation]);
+  }, [isSuccess, hash, onShowCongratulation]);
 
-  // Check for transaction confirmation
-  useEffect(() => {
-    if (isSuccess) {
-      console.log('Transaction confirmed!');
-    }
-  }, [isSuccess]);
+
 
   // Check for transaction errors
   useEffect(() => {
@@ -180,12 +184,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const getButtonText = () => {
     if (isConnecting) return 'Connecting...';
     if (isEstimatingGas) return 'Estimating fees...';
-    if (isSending || isConfirming) return (
-      <span>
-        Processing
-        <span className="loadingDotsSequential"></span>
-      </span>
-    );
+    if (isSending || isConfirming || isPostVerificationProcessing) return 'Processing';
     if (!isConnected) return 'Connect to wallet';
     if (gasError) return 'Fee estimation failed';
     return 'Place your order';
@@ -205,14 +204,18 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         </div>
       )}
       
-      {/* Payment Button */}
-      <button 
-        onClick={handleButtonClick} 
-        disabled={isDisabled} 
-        className={`${styles.connectWalletButton} ${(isSending || isConfirming) ? styles.loading : ''}`}
-      >
-        {getButtonText()}
-      </button>
+      {/* Payment Button Container */}
+      <div className={styles.buttonContainer}>
+        <button 
+          onClick={handleButtonClick} 
+          disabled={isDisabled} 
+          className={`${styles.connectWalletButton} ${(isSending || isConfirming || isPostVerificationProcessing) ? styles.loading : ''}`}
+        >
+          {getButtonText()}
+        </button>
+        
+
+      </div>
     </div>
   );
 };
