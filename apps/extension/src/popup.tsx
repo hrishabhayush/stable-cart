@@ -2,11 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // For browser extensions, we'll use a hardcoded URL or get it from storage
-<<<<<<< Updated upstream
 const VERCEL_LINK = 'webapp-puce-rho.vercel.app'; // Hardcoded for now
-=======
-const VERCEL_LINK = 'webapp-pi-lac.vercel.app'; // Hardcoded for now
->>>>>>> Stashed changes
 
 interface ProductInfo {
   title: string;
