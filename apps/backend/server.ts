@@ -6,6 +6,8 @@ import { giftCodeRoutes, setGiftCodeService } from './routes/admin/giftCodes';
 import { GiftCodeInventoryService } from './services/GiftCodeInventoryService';
 import checkoutSessionRoutes, { setCheckoutSessionService, setDatabase } from './routes/checkoutSessions';
 import { CheckoutSessionService } from './services/CheckoutSessionService';
+import walletTrackingRoutes, { setWalletTrackingService } from './routes/walletTracking';
+import { WalletTrackingService } from './services/WalletTrackingService';
 
 const app: Express = express();
 const PORT = process.env.PORT || 3001;
@@ -34,6 +36,11 @@ async function startServer() {
     console.log('✅ Checkout session service created, setting service...');
     setCheckoutSessionService(checkoutSessionService);
     
+    // Initialize the wallet tracking service with CDP API key
+    const walletTrackingService = new WalletTrackingService(db, '0USnEPehKTmi0yRC4apQYawZ5QUsdhLF');
+    console.log('✅ Wallet tracking service created, setting service...');
+    setWalletTrackingService(walletTrackingService);
+    
     // Set the database globally for routes to access
     setDatabase(db);
     
@@ -44,6 +51,9 @@ async function startServer() {
     
     // Checkout session routes
     app.use('/api/checkout-sessions', checkoutSessionRoutes);
+    
+    // Wallet tracking routes
+    app.use('/api/wallet', walletTrackingRoutes);
     
     console.log('✅ Routes added, setting up endpoints...');
 

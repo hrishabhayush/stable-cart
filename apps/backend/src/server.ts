@@ -54,6 +54,63 @@ async function startServer() {
       });
     });
 
+    // Webhook endpoint for payment notifications
+    app.post('/api/webhook/payment', (req, res) => {
+      try {
+        console.log('🔔 Webhook received:', req.body);
+        
+        const { transactionHash, orderId, amount, from, to } = req.body;
+        
+        // Validate required fields
+        if (!transactionHash || !orderId) {
+          return res.status(400).json({
+            success: false,
+            error: 'Missing required fields: transactionHash and orderId'
+          });
+        }
+
+        // Process the payment notification
+        console.log('💰 Processing payment webhook:');
+        console.log('  Transaction Hash:', transactionHash);
+        console.log('  Order ID:', orderId);
+        console.log('  Amount:', amount);
+        console.log('  From:', from);
+        console.log('  To:', to);
+
+        // Here you can add logic to:
+        // 1. Update order status in database
+        // 2. Trigger gift card automation
+        // 3. Send notifications
+        // 4. Log the transaction
+
+        // For now, just acknowledge receipt
+        res.json({
+          success: true,
+          message: 'Payment webhook processed successfully',
+          timestamp: new Date().toISOString(),
+          orderId: orderId,
+          transactionHash: transactionHash
+        });
+
+      } catch (error) {
+        console.error('❌ Webhook processing error:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to process webhook'
+        });
+      }
+    });
+
+    // GET endpoint for webhook testing
+    app.get('/api/webhook/test', (req, res) => {
+      res.json({
+        success: true,
+        message: 'Webhook endpoint is working!',
+        timestamp: new Date().toISOString(),
+        usage: 'Send POST requests to /api/webhook/payment with payment data'
+      });
+    });
+
     // Basic error handling
     app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
       console.error('Error:', err);

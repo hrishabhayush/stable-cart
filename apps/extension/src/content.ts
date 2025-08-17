@@ -2,6 +2,7 @@
 // Content script that runs on Amazon pages
 
 import { paymentModal } from './payment-modal';
+import { giftCardHandler } from './gift-card-handler';
 
 (function() {
   'use strict';
@@ -1278,6 +1279,9 @@ import { paymentModal } from './payment-modal';
     }
   };
 
-  // Initialize the extension
-  utils.init();
-})();
+      // Initialize the extension
+    utils.init();
+    
+    // Initialize gift card handler
+    giftCardHandler.init();
+  })();

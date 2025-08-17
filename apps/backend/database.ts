@@ -81,15 +81,59 @@ export function initializeDatabase(db: Database): Promise<void> {
                   return;
                 }
 
-                db.run(`CREATE INDEX IF NOT EXISTS idx_inventory_denomination ON gift_code_inventory(denomination)`, (err) => {
-                  if (err) {
-                    reject(err);
-                    return;
-                  }
+                                  db.run(`CREATE INDEX IF NOT EXISTS idx_inventory_denomination ON gift_code_inventory(denomination)`, (err) => {
+                    if (err) {
+                      reject(err);
+                      return;
+                    }
 
-                  console.log('✅ Database tables initialized successfully');
-                  resolve();
-                });
+                    // Create wallet_activity table
+                    db.run(`
+                      CREATE TABLE IF NOT EXISTS wallet_activity (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        wallet_address TEXT NOT NULL,
+                        transaction_hash TEXT NOT NULL,
+                        block_number TEXT NOT NULL,
+                        from_address TEXT NOT NULL,
+                        to_address TEXT NOT NULL,
+                        value TEXT NOT NULL,
+                        token TEXT NOT NULL,
+                        timestamp TEXT NOT NULL,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE(wallet_address, transaction_hash)
+                      )
+                    `, (err) => {
+                      if (err) {
+                        reject(err);
+                        return;
+                      }
+
+                      // Create indexes for wallet activity
+                      db.run(`CREATE INDEX IF NOT EXISTS idx_wallet_address ON wallet_activity(wallet_address)`, (err) => {
+                        if (err) {
+                          reject(err);
+                          return;
+                        }
+
+                        db.run(`CREATE INDEX IF NOT EXISTS idx_wallet_timestamp ON wallet_activity(timestamp)`, (err) => {
+                          if (err) {
+                            reject(err);
+                            return;
+                          }
+
+                          db.run(`CREATE INDEX IF NOT EXISTS idx_wallet_token ON wallet_activity(token)`, (err) => {
+                            if (err) {
+                              reject(err);
+                              return;
+                            }
+
+                            console.log('✅ Database tables initialized successfully');
+                            resolve();
+                          });
+                        });
+                      });
+                    });
+                  });
               });
             });
           });

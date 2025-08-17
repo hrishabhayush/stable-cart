@@ -21,6 +21,7 @@ const Home = () => {
   // Congratulation page state
   const [showCongratulation, setShowCongratulation] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string>('');
+  const [checkoutSessionId, setCheckoutSessionId] = useState<string>('');
   
   // Wagmi hooks for wallet connection
   const { connect, isPending: isConnecting } = useConnect();
@@ -116,21 +117,108 @@ const Home = () => {
 
       if (response.ok) {
         const result = await response.json();
-        setCheckoutSessionId(result.session.sessionId);
+        const sessionId = result.session.sessionId;
+        setCheckoutSessionId(sessionId);
         
         // Store payment success data for extension
         const paymentData = {
           type: 'PAYMENT_SUCCESS',
           transactionHash: txHash,
-          orderId: result.session.sessionId,
+          orderId: sessionId,
           timestamp: Date.now()
         };
         
         localStorage.setItem('stablecart_payment_success', JSON.stringify(paymentData));
         console.log('Payment success data stored:', paymentData);
+
+        // 🔄 NEW: Verify payment and trigger gift card automation
+        await verifyPaymentAndTriggerAutomation(txHash, sessionId);
       }
     } catch (error) {
       console.error('Failed to create checkout session:', error);
+    }
+  };
+
+  // 🔄 NEW: Payment verification and automation trigger
+  const verifyPaymentAndTriggerAutomation = async (txHash: string, sessionId: string) => {
+    try {
+      console.log('🔍 Verifying payment and triggering automation...');
+      
+      // Wait a few seconds for transaction to be indexed
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Verify payment using CDP tracking
+      const verificationResponse = await fetch('http://localhost:3001/api/wallet/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromAddress: address,
+          toAddress: MERCHANT_ADDRESS,
+          amount: productPrice.toString(),
+          token: 'USDC',
+          minutes: 5
+        })
+      });
+
+      if (verificationResponse.ok) {
+        const verificationResult = await verificationResponse.json();
+        
+        if (verificationResult.paymentVerified) {
+          console.log('✅ Payment verified! Transaction:', verificationResult.transaction);
+          
+          // Get gift codes for the session
+          const giftCodesResponse = await fetch(`http://localhost:3001/api/checkout-sessions/${sessionId}/gift-codes`);
+          
+          if (giftCodesResponse.ok) {
+            const giftCodesResult = await giftCodesResponse.json();
+            console.log('🎁 Gift codes allocated:', giftCodesResult.giftCodes);
+            
+            // Trigger gift card automation
+            await triggerGiftCardAutomation(sessionId, giftCodesResult.giftCodes);
+          } else {
+            console.error('❌ Failed to get gift codes');
+          }
+        } else {
+          console.log('⚠️ Payment not verified yet:', verificationResult.message);
+          // Retry after a delay
+          setTimeout(() => verifyPaymentAndTriggerAutomation(txHash, sessionId), 5000);
+        }
+      } else {
+        console.error('❌ Payment verification failed');
+      }
+    } catch (error) {
+      console.error('❌ Error in payment verification:', error);
+    }
+  };
+
+  // 🔄 NEW: Trigger gift card automation
+  const triggerGiftCardAutomation = async (sessionId: string, giftCodes: any[]) => {
+    try {
+      console.log('🎁 Triggering gift card automation...');
+      
+      // Send automation trigger to extension via localStorage
+      const automationData = {
+        type: 'GIFT_CARD_AUTOMATION',
+        sessionId,
+        amazonUrl: window.location.href,
+        giftCodes,
+        totalAmount: productPrice,
+        transactionHash: transactionHash,
+        timestamp: Date.now()
+      };
+      
+      localStorage.setItem('stablecart_gift_card_automation', JSON.stringify(automationData));
+      
+      // Also send via postMessage for immediate response
+      window.postMessage(automationData, '*');
+      
+      console.log('✅ Gift card automation triggered:', automationData);
+      
+      // Show success message to user
+      setShowCongratulation(true);
+      
+    } catch (error) {
+      console.error('❌ Error triggering gift card automation:', error);
     }
   };
 
