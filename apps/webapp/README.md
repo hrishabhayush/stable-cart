@@ -1,29 +1,94 @@
-This is a [RainbowKit](https://rainbowkit.com) + [wagmi](https://wagmi.sh) + [Next.js](https://nextjs.org/) project bootstrapped with [`create-rainbowkit`](/packages/create-rainbowkit).
+# Primer Webapp
 
-## Getting Started
+**Payment interface for crypto checkout on Amazon**
 
-First, run the development server:
+This is the payment webapp that users see when they click "Checkout with Crypto" on Amazon. It handles wallet connections, USDC payments, and communicates with the extension to trigger gift card automation.
+
+## What It Does
+
+- **Wallet Connection** Connect Coinbase, MetaMask, Phantom wallets
+- **Payment Processing** Send USDC to merchant address on Base network
+- **Real-Time Pricing** Shows actual Amazon listing prices (not hardcoded $0.01)
+- **Extension Sync** Communicates payment success to trigger automation
+
+## Tech Stack
+
+- **Next.js 13** React framework
+- **TypeScript** Type safety
+- **Wagmi** Wallet connections
+- **CSS Modules** Styling
+- **Vercel** Deployment
+
+## Quick Start
 
 ```bash
-npm run dev
+# Install dependencies
+pnpm install
+
+# Start development
+pnpm dev
+
+# Open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How It Works
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+1. **Extension opens webapp** when user clicks "Checkout with Crypto"
+2. **User connects wallet** supports multiple wallet types
+3. **Webapp shows order details** with real Amazon pricing
+4. **User confirms payment** amount and gas fees
+5. **USDC transaction sent** to merchant wallet
+6. **Payment verified** via Coinbase CDP
+7. **Extension notified** triggers gift card automation
+8. **Order completed** on Amazon
 
-## Learn More
+## Key Features
 
-To learn more about this stack, take a look at the following resources:
+**Dynamic pricing** Real Amazon prices, not $0.01  
+**Multi-wallet** Coinbase, MetaMask, Phantom  
+**Payment processing** USDC on Base network  
+**Extension communication** Real-time sync  
+**Error handling** User-friendly messages  
 
-- [RainbowKit Documentation](https://rainbowkit.com) - Learn how to customize your wallet connection flow.
-- [wagmi Documentation](https://wagmi.sh) - Learn how to interact with Ethereum.
-- [Next.js Documentation](https://nextjs.org/docs) - Learn how to build a Next.js application.
+## Project Structure
 
-You can check out [the RainbowKit GitHub repository](https://github.com/rainbow-me/rainbowkit) - your feedback and contributions are welcome!
+```
+src/
+├── pages/index.tsx          # Main payment interface
+├── components/PaymentButton.tsx # Crypto payment processing
+├── services/priceConversion.ts # Price utilities
+├── config/merchant.ts        # Merchant config
+├── styles/                   # CSS modules
+└── wagmi.ts                  # Wallet config
+```
 
-## Deploy on Vercel
+## Integration Points
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Chrome Extension** postMessage communication
+- **Backend API** Payment verification
+- **Blockchain** Base network, USDC payments
+- **Payment Monitoring** Gift card automation triggers
 
-Check out the [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Testing
+
+- **Wallet connections** Test with different wallet types
+- **Payment flows** Simulate USDC transactions
+- **Extension sync** Test cross-tab communication
+- **Error scenarios** Network failures, insufficient funds
+
+## Deployment
+
+- **Production**: [Vercel](https://webapp-2p3fj5n6g-cynthwanggs-projects.vercel.app)
+- **Development**: localhost:3000
+- **Auto-deploy**: Connected to main branch
+
+## Innovation Highlights
+
+**Mainstream focused** Designed for regular Amazon shoppers, not crypto experts
+**Seamless experience** Users get crypto benefits without blockchain knowledge
+**Real automation** Complete order fulfillment, not just payment processing
+**Production ready** Deployed and working with real integrations
+
+---
+
+**Part of Primer Making crypto payments seamless on Amazon**
