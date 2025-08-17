@@ -14,7 +14,7 @@ export class PaymentModal {
   private modal: HTMLElement | null = null;
   private isOpen: boolean = false;
   private productInfo: ProductInfo | null = null;
-  private readonly MERCHANT_ADDRESS = '0xA9028774695553d62f90fcD21200e69F11678689'; // Your merchant wallet
+  private readonly MERCHANT_ADDRESS = '0xD880E96C35B217B9E220B69234A12AcFC175f92B'; // Your merchant wallet
 
   /**
    * Show payment modal

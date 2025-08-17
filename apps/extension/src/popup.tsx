@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // For browser extensions, we'll use a hardcoded URL or get it from storage
-const VERCEL_LINK = 'webapp-puce-rho.vercel.app'; // Hardcoded for now
+const VERCEL_LINK = 'webapp-ten-beige.vercel.app'; // Hardcoded for now
 
 interface ProductInfo {
   title: string;
@@ -91,6 +91,21 @@ const CryptoCheckoutPopup: React.FC = () => {
     } else {
       setConnectionStatus('Wallet connection not implemented for this wallet yet.');
     }
+  };
+
+  const handleTestPayment = () => {
+    // Simulate payment completion for testing
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'SIMULATE_PAYMENT_COMPLETE',
+          walletAddress: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'
+        });
+      }
+    });
+    
+    // Close popup after triggering test
+    window.close();
   };
 
   const handleNetworkSelect = () => {
@@ -386,6 +401,36 @@ const CryptoCheckoutPopup: React.FC = () => {
           {connectionStatus}
         </div>
       )} */}
+      {/* Test Button */}
+      <button 
+        style={{
+          position: 'absolute' as const,
+          bottom: '70px',
+          left: '20px',
+          right: '20px',
+          height: '32px',
+          background: '#FF6B35',
+          color: '#FFFFFF',
+          border: 'none',
+          borderRadius: '12px',
+          fontSize: '12px',
+          fontWeight: 600,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+          e.currentTarget.style.background = '#E55A2B';
+        }}
+        onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+          e.currentTarget.style.background = '#FF6B35';
+        }}
+        onClick={handleTestPayment}
+      >
+        🧪 Test Gift Card Automation
+      </button>
+
       {/* Proceed to Payment Button */}
       <button 
         style={getButtonStyle()}

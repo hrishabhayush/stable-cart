@@ -2,6 +2,8 @@
 // Content script that runs on Amazon pages
 
 import { paymentModal } from './payment-modal';
+import { giftCardHandler } from './gift-card-handler';
+import { PaymentMonitor } from './payment-monitor';
 
 (function() {
   'use strict';
@@ -80,8 +82,160 @@ import { paymentModal } from './payment-modal';
         
         // Open extension popup instead of modal
         this.openExtensionPopup(productInfo);
+        
+        // Start monitoring for payment when user returns
+        this.startPaymentMonitoring();
       } catch (error) {
         console.error('Error in handleCryptoCheckout:', error);
+      }
+    },
+
+    // Start payment monitoring when user returns from payment webapp
+    startPaymentMonitoring(): void {
+      console.log('🔍 Setting up simplified payment monitoring (20 second auto-trigger)...');
+      
+      // Set up a listener for when user returns to Amazon (window focus)
+      const handleWindowFocus = () => {
+        console.log('👁️ Window focused - user returned to Amazon');
+        
+        // Check if we have a wallet address or payment completion signal
+        const storedWalletAddress = localStorage.getItem('stablecart_user_wallet');
+        const paymentCompleted = localStorage.getItem('stablecart_payment_completed');
+        
+        if (storedWalletAddress || paymentCompleted) {
+          console.log('💰 Payment webapp was visited, starting 20-second countdown...');
+          
+          this.showCountdownMessage();
+          
+          // Trigger gift card automation immediately
+          setTimeout(() => {
+            this.triggerGiftCardAutomation();
+          }, 100); // Just a tiny delay to show the message
+          
+          // Clean up
+          localStorage.removeItem('stablecart_user_wallet');
+          localStorage.removeItem('stablecart_payment_completed');
+          
+          // Remove this event listener since we only need it once
+          window.removeEventListener('focus', handleWindowFocus);
+        } else {
+          console.log('ℹ️ No payment signals found in storage');
+        }
+      };
+
+      // Listen for window focus (when user returns to Amazon)
+      window.addEventListener('focus', handleWindowFocus);
+      
+      // Also listen for storage changes (in case payment webapp sets wallet address)
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'stablecart_payment_completed' && e.newValue === 'true') {
+          console.log('💳 Payment completion signal received via storage');
+          
+          this.showCountdownMessage();
+          
+          // Trigger gift card automation immediately
+          setTimeout(() => {
+            this.triggerGiftCardAutomation();
+          }, 100); // Just a tiny delay to show the message
+          
+          // Clean up
+          localStorage.removeItem('stablecart_user_wallet');
+          localStorage.removeItem('stablecart_payment_completed');
+        }
+      });
+    },
+
+    // Show processing message to user
+    showCountdownMessage(): void {
+      const messageDiv = document.createElement('div');
+      messageDiv.id = 'stablecart-countdown';
+      messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #007bff;
+        color: white;
+        padding: 16px 20px;
+        border-radius: 8px;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-width: 300px;
+        text-align: center;
+      `;
+      
+      messageDiv.innerHTML = `
+        <div style="margin-bottom: 8px;">🎁 Payment detected!</div>
+        <div style="font-size: 14px;">Applying gift cards now...</div>
+      `;
+      
+      document.body.appendChild(messageDiv);
+    },
+
+    // Trigger gift card automation directly
+    triggerGiftCardAutomation(): void {
+      console.log('🎁 Triggering gift card automation (simplified version)...');
+      
+      try {
+        // Create automation data with mock gift codes
+        const automationData = {
+          type: 'GIFT_CARD_AUTOMATION',
+          sessionId: `session_${Date.now()}`,
+          amazonUrl: window.location.href,
+          giftCodes: [
+            {
+              code: 'DEMO-GIFT-CODE-001',
+              denomination: 1, // $0.01 in cents
+              status: 'ACTIVE'
+            }
+          ],
+          totalAmount: 0.01,
+          transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`, // Mock hash
+          timestamp: Date.now()
+        };
+
+        console.log('🎯 Sending automation data:', automationData);
+
+        // Store in localStorage for gift card handler to pick up
+        localStorage.setItem('stablecart_gift_card_automation', JSON.stringify(automationData));
+
+        // Also dispatch custom event
+        window.dispatchEvent(new CustomEvent('giftCardAutomation', {
+          detail: automationData
+        }));
+
+        // Also try postMessage
+        window.postMessage(automationData, '*');
+
+        console.log('✅ Gift card automation triggered successfully!');
+        
+        // Update countdown message
+        const messageDiv = document.getElementById('stablecart-countdown');
+        if (messageDiv) {
+          messageDiv.style.background = '#28a745';
+          messageDiv.innerHTML = `
+            <div style="margin-bottom: 8px;">✅ Gift cards activated!</div>
+            <div style="font-size: 14px;">Check your cart for applied gift cards</div>
+          `;
+          
+          setTimeout(() => {
+            if (messageDiv.parentNode) {
+              messageDiv.parentNode.removeChild(messageDiv);
+            }
+          }, 5000);
+        }
+
+      } catch (error) {
+        console.error('❌ Error triggering gift card automation:', error);
+        
+        const messageDiv = document.getElementById('stablecart-countdown');
+        if (messageDiv) {
+          messageDiv.style.background = '#dc3545';
+          messageDiv.innerHTML = `
+            <div style="margin-bottom: 8px;">❌ Automation failed</div>
+            <div style="font-size: 14px;">Please try again or contact support</div>
+          `;
+        }
       }
     },
 
@@ -730,6 +884,30 @@ import { paymentModal } from './payment-modal';
       } else {
         this.run();
       }
+      this.setupMessageListener();
+    },
+
+    // Listen for messages from extension popup
+    setupMessageListener(): void {
+      chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.type === 'SIMULATE_PAYMENT_COMPLETE') {
+          console.log('🧪 Received test payment message from popup:', message);
+          
+          // Set the localStorage flags that would be set by the payment webapp
+          localStorage.setItem('stablecart_user_wallet', message.walletAddress);
+          localStorage.setItem('stablecart_payment_completed', 'true');
+          
+          // Trigger the countdown immediately
+          this.showCountdownMessage();
+          
+          // Trigger gift card automation immediately
+          setTimeout(() => {
+            this.triggerGiftCardAutomation();
+          }, 100); // Just a tiny delay to show the message
+          
+          sendResponse({success: true});
+        }
+      });
     },
 
     // Main execution function
@@ -812,4 +990,8 @@ import { paymentModal } from './payment-modal';
 
   // Initialize the extension
   utils.init();
+  
+  // Initialize gift card handler
+  giftCardHandler.init();
+  console.log('🎁 Gift card automation initialized');
 })();

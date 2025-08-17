@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Stable Cart Crypto Checkout",
+  "name": "Primer",
   "version": "1.0.0",
   "description": "Adds crypto checkout option to e-commerce checkout pages",
   "permissions": [
@@ -38,7 +38,7 @@
   },
 
   "action": {
-    "default_title": "Stable Cart Crypto Checkout",
+    "default_title": "Primer - Crypto Checkout",
     "default_popup": "popup.html"
   }
 } 
