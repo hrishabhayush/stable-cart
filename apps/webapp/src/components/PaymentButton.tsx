@@ -3,6 +3,7 @@ import { useConnect, useSendTransaction, useWaitForTransactionReceipt, useAccoun
 import { coinbaseWallet } from 'wagmi/connectors';
 import { parseEther } from 'viem';
 import { sepolia } from 'wagmi/chains';
+import styles from '../styles/Home.module.css';
 
 interface PaymentButtonProps {
   amount: number;
@@ -160,7 +161,12 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 
   const getButtonText = () => {
     if (isConnecting) return 'Connecting...';
-    if (isSending || isConfirming) return 'Processing...';
+    if (isSending || isConfirming) return (
+      <span>
+        Processing
+        <span className="loadingDots"></span>
+      </span>
+    );
     if (!isConnected) return 'Connect to wallet';
     return 'Place your order';
   };
@@ -169,18 +175,10 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     <div className={className}>
       {/* Disconnect Wallet Button - Only show when connected */}
       {isConnected && (
-        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+        <div className={styles.disconnectButtonContainer}>
           <button
             onClick={handleDisconnect}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#0066cc',
-              textDecoration: 'underline',
-              fontSize: '14px',
-              cursor: 'pointer',
-              fontFamily: 'Amazon Ember Display, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-            }}
+            className={styles.disconnectWalletButton}
           >
             Disconnect wallet
           </button>
@@ -188,27 +186,10 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       )}
       
       {/* Payment Button */}
-      <button
-        onClick={handleButtonClick}
-        disabled={isDisabled || isConnecting}
-        className="payment-button"
-        style={{
-          background: isDisabled || isConnecting
-            ? '#cccccc' 
-            : 'linear-gradient(135deg, #FFD812 0%, #F4C800 100%)',
-          color: '#000000',
-          border: 'none',
-          padding: '12px 32px',
-          borderRadius: '24px',
-          fontSize: '14px',
-          fontWeight: '400',
-          cursor: isDisabled || isConnecting ? 'not-allowed' : 'pointer',
-          transition: 'all 0.3s ease',
-          fontFamily: 'Amazon Ember Display, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          minWidth: '200px',
-          textAlign: 'center',
-          opacity: isDisabled || isConnecting ? 0.6 : 1,
-        }}
+      <button 
+        onClick={handleButtonClick} 
+        disabled={isDisabled} 
+        className={`${styles.connectWalletButton} ${(isSending || isConfirming) ? styles.loading : ''}`}
       >
         {getButtonText()}
       </button>

@@ -131,7 +131,7 @@ const CryptoCheckoutPopup: React.FC = () => {
       margin: 0,
       padding: 0,
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      background: '#FFFFFF',
+      background: '#F8F8F8', // Changed from #FFFFFF to #F8F8F8 to match webapp
       overflow: 'hidden',
       position: 'relative'
     }}>
@@ -187,9 +187,9 @@ const CryptoCheckoutPopup: React.FC = () => {
         top: '90px',
         left: '20px',
         right: '20px',
-        background: '#FFFFFF',
+        background: '#FFFFFF', // Keep white background
         borderRadius: '5px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        // Removed box-shadow and border
         padding: '20px'
       }}>
         <h2 style={{
@@ -275,9 +275,9 @@ const CryptoCheckoutPopup: React.FC = () => {
         top: '290px',
         left: '20px',
         right: '20px',
-        background: '#FFFFFF',
+        background: '#FFFFFF', // Keep white background
         borderRadius: '5px',
-        border: '1px solid rgba(35, 47, 62, 0.49)',
+        // Removed border
         padding: '20px',  
         height: '190px'
       }}>

@@ -31,3 +31,23 @@ a {
 .container .main .urlDisplay {
   /* Your custom styles will have higher priority */
 }
+
+/* CSS Reset for buttons to prevent browser defaults from interfering */
+button {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+/* Ensure your custom button styles take precedence */
+button.connectWalletButton {
+  all: unset;
+  box-sizing: border-box;
+}
