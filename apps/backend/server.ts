@@ -2,9 +2,9 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import { Database } from 'sqlite3';
 import { initializeDatabase } from './database';
-import { giftCodeRoutes, setGiftCodeService } from './routes_backup/admin/giftCodes';
+import { giftCodeRoutes, setGiftCodeService } from './routes/admin/giftCodes';
 import { GiftCodeInventoryService } from './services/GiftCodeInventoryService';
-import checkoutSessionRoutes, { setCheckoutSessionService } from './routes_backup/checkoutSessions';
+import checkoutSessionRoutes, { setCheckoutSessionService, setDatabase } from './routes/checkoutSessions';
 import { CheckoutSessionService } from './services/CheckoutSessionService';
 
 const app: Express = express();
@@ -33,6 +33,9 @@ async function startServer() {
     const checkoutSessionService = new CheckoutSessionService(db);
     console.log('✅ Checkout session service created, setting service...');
     setCheckoutSessionService(checkoutSessionService);
+    
+    // Set the database globally for routes to access
+    setDatabase(db);
     
     console.log('✅ Services set, adding routes...');
     
@@ -78,4 +81,3 @@ async function startServer() {
 startServer();
 
 export { app, db };
-

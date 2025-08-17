@@ -586,41 +586,6 @@ export class CheckoutSessionService {
   }
 
   /**
-   * Gets gift codes for a specific checkout session
-   * Edge cases handled:
-   * - Session not found
-   * - No gift codes available
-   * - Database query failures
-   */
-  async getGiftCodesForSession(sessionId: string): Promise<any[]> {
-    try {
-      // First, get the session to understand the amount needed
-      const session = await this.getSession(sessionId);
-      if (!session) {
-        throw new Error('Session not found');
-      }
-
-      // For now, return a mock gift code structure
-      // In a real implementation, this would query the gift code inventory
-      const mockGiftCode = {
-        id: 1,
-        code: 'AMAZON-GIFT-CODE-123456',
-        denomination: session.cartTotalCents,
-        status: 'AVAILABLE',
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
-      };
-
-      return [mockGiftCode];
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error(`Unexpected error retrieving gift codes for session: ${error}`);
-    }
-  }
-
-  /**
    * Generates unique session ID
    * Edge cases handled:
    * - Collision prevention

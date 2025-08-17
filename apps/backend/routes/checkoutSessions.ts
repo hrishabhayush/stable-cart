@@ -11,6 +11,10 @@ export const setCheckoutSessionService = (service: CheckoutSessionService) => {
   checkoutSessionService = service;
 };
 
+export const setDatabase = (database: any) => {
+  (global as any).stablecartDb = database;
+};
+
 /**
  * POST /api/checkout-sessions
  * Create a new checkout session
@@ -212,8 +216,62 @@ router.get('/:sessionId/status', async (req: Request, res: Response) => {
 });
 
 /**
+ * PATCH /api/checkout-sessions/:sessionId/status
+ * Update the status of a checkout session
+ */
+router.patch('/:sessionId/status', async (req: Request, res: Response) => {
+  try {
+    const { sessionId } = req.params;
+    const { status } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Session ID is required'
+      });
+    }
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Status is required'
+      });
+    }
+
+    // Validate status values
+    const validStatuses = ['CREATED', 'PENDING', 'PAID', 'PROCESSING', 'FULFILLED', 'COMPLETED', 'EXPIRED', 'FAILED'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+      });
+    }
+
+    const updatedSession = await checkoutSessionService.updateSessionStatus(sessionId, status);
+
+    if (!updatedSession) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found'
+      });
+    }
+
+    return res.json({
+      success: true,
+      session: updatedSession
+    });
+  } catch (error) {
+    console.error('Error updating checkout session status:', error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    });
+  }
+});
+
+/**
  * GET /api/checkout-sessions/:sessionId/gift-codes
- * Get gift codes for a specific checkout session
+ * Get available gift codes for a checkout session
  */
 router.get('/:sessionId/gift-codes', async (req: Request, res: Response) => {
   try {
@@ -226,8 +284,8 @@ router.get('/:sessionId/gift-codes', async (req: Request, res: Response) => {
       });
     }
 
+    // Get the session to determine the amount needed
     const session = await checkoutSessionService.getSession(sessionId);
-
     if (!session) {
       return res.status(404).json({
         success: false,
@@ -235,16 +293,24 @@ router.get('/:sessionId/gift-codes', async (req: Request, res: Response) => {
       });
     }
 
-    // Get gift codes for the session amount
-    const giftCodes = await checkoutSessionService.getGiftCodesForSession(sessionId);
+    // Get available gift codes for the top-up amount
+    const topUpAmountCents = session.topUpAmountCents;
+    
+    // Import the gift code service
+    const { GiftCodeInventoryService } = require('../services/GiftCodeInventoryService');
+    const giftCodeService = new GiftCodeInventoryService((global as any).stablecartDb);
+    
+    const allocationResult = await giftCodeService.allocateGiftCodes(topUpAmountCents);
 
     return res.json({
       success: true,
-      sessionId: session.sessionId,
-      giftCodes: giftCodes
+      sessionId,
+      topUpAmountCents,
+      giftCodes: allocationResult.allocatedCodes,
+      totalAllocated: allocationResult.totalAllocatedCents
     });
   } catch (error) {
-    console.error('Error retrieving gift codes for session:', error);
+    console.error('Error getting gift codes for session:', error);
     return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'

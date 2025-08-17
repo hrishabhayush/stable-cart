@@ -94,9 +94,44 @@ const Home = () => {
     disconnect();
   };
 
-  const handlePaymentSuccess = (txHash: string) => {
+  const handlePaymentSuccess = async (txHash: string) => {
     console.log('Payment successful! Transaction hash:', txHash);
-    // Remove the alert - just log the success
+    
+    // Create checkout session in backend
+    try {
+      const sessionData = {
+        amazonUrl: window.location.href,
+        cartTotalCents: Math.round(productPrice * 100), // Convert to cents
+        currentBalanceCents: 0, // User has no current balance
+        userId: address || 'anonymous' // Use wallet address as user ID
+      };
+
+      const response = await fetch('http://localhost:3001/api/checkout-sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(sessionData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setCheckoutSessionId(result.session.sessionId);
+        
+        // Store payment success data for extension
+        const paymentData = {
+          type: 'PAYMENT_SUCCESS',
+          transactionHash: txHash,
+          orderId: result.session.sessionId,
+          timestamp: Date.now()
+        };
+        
+        localStorage.setItem('stablecart_payment_success', JSON.stringify(paymentData));
+        console.log('Payment success data stored:', paymentData);
+      }
+    } catch (error) {
+      console.error('Failed to create checkout session:', error);
+    }
   };
 
   const handleShowCongratulation = (txHash: string) => {

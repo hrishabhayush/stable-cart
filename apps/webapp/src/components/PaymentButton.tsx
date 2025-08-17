@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useConnect, useSendTransaction, useWaitForTransactionReceipt, useAccount, useDisconnect, useSwitchChain, useEstimateGas } from 'wagmi';
-import { coinbaseWallet } from 'wagmi/connectors';
 import { parseEther } from 'viem';
 import { sepolia } from 'wagmi/chains';
 import styles from '../styles/Home.module.css';
@@ -86,11 +85,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   }, [isSending, hash]);
 
   const connectCoinbaseWallet = () => {
-    // Force connection to Sepolia
-    connect({ 
-      connector: coinbaseWallet(),
-      chainId: sepolia.id 
-    });
+    // For now, just show an alert to connect wallet manually
+    // This will be fixed when the wallet connection is properly configured
+    alert('Please connect your wallet manually. The automatic connection is being configured.');
   };
 
   const handleDisconnect = () => {
