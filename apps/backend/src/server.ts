@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import { Database } from 'sqlite3';
 import { initializeDatabase } from './database';
+import onrampRoutes from './routes/onramp';
 // import { giftCodeRoutes, setGiftCodeService } from './routes/admin/giftCodes';
 // import { GiftCodeInventoryService } from './services/GiftCodeInventoryService';
 // import checkoutSessionRoutes, { setCheckoutSessionService } from './routes/checkoutSessions';
@@ -43,6 +44,10 @@ async function startServer() {
     // app.use('/api/checkout-sessions', checkoutSessionRoutes);
     
     // console.log('✅ Routes added, setting up endpoints...');
+
+    // On Ramp routes
+    app.use('/api/onramp', onrampRoutes);
+    console.log('✅ On Ramp routes added');
 
     // Health check endpoint
     app.get('/api/health', (req, res) => {

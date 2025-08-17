@@ -108,6 +108,21 @@ const CryptoCheckoutPopup: React.FC = () => {
     window.close();
   };
 
+  const handleTestPlaceOrder = () => {
+    // Test the place order button functionality
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'TEST_PLACE_ORDER',
+          action: 'addTestButton'
+        });
+      }
+    });
+    
+    // Close popup after triggering test
+    window.close();
+  };
+
   const handleNetworkSelect = () => {
     console.log('Network selection clicked');
     // Add network selection functionality here
@@ -401,6 +416,36 @@ const CryptoCheckoutPopup: React.FC = () => {
           {connectionStatus}
         </div>
       )} */}
+      {/* Test Place Order Button */}
+      <button 
+        style={{
+          position: 'absolute' as const,
+          bottom: '110px',
+          left: '20px',
+          right: '20px',
+          height: '32px',
+          background: '#10B981',
+          color: '#FFFFFF',
+          border: 'none',
+          borderRadius: '12px',
+          fontSize: '12px',
+          fontWeight: 600,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+          e.currentTarget.style.background = '#059669';
+        }}
+        onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+          e.currentTarget.style.background = '#10B981';
+        }}
+        onClick={handleTestPlaceOrder}
+      >
+        🎯 Test Place Order Button
+      </button>
+
       {/* Test Button */}
       <button 
         style={{

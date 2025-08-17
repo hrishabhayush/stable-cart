@@ -5,6 +5,17 @@ import { parseUnits, encodeFunctionData } from 'viem';
 import { base } from 'wagmi/chains';
 import styles from '../styles/Home.module.css';
 
+// 🆕 ON RAMP INTEGRATION: Add On Ramp functionality for insufficient Base ETH
+interface OnrampQuoteResponse {
+  coinbaseFee: { currency: string; value: string };
+  networkFee: { currency: string; value: string };
+  onrampUrl: string;
+  paymentSubtotal: { currency: string; value: string };
+  paymentTotal: { currency: string; value: string };
+  purchaseAmount: { currency: string; value: string };
+  quoteId: string;
+}
+
 // USDC contract address on Base
 const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 
@@ -45,6 +56,11 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const fixedAmountUSDC = 0.01;
   const [isDisabled, setIsDisabled] = useState(disabled);
   const [error, setError] = useState<Error | null>(null);
+  
+  // 🆕 ON RAMP STATE
+  const [showOnrampButton, setShowOnrampButton] = useState(false);
+  const [isOnrampLoading, setIsOnrampLoading] = useState(false);
+  const [onrampQuote, setOnrampQuote] = useState<OnrampQuoteResponse | null>(null);
   
   // Wagmi hooks
   const { connect, isPending: isConnecting } = useConnect();
@@ -92,6 +108,16 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       onPaymentSuccess?.(hash);
     }
   }, [hash, onPaymentSuccess]);
+
+  // 🆕 ON RAMP: Check if user needs to buy Base ETH when gas estimation fails
+  useEffect(() => {
+    if (gasError && isConnected && address) {
+      console.log('💰 Gas estimation failed - checking if user needs Base ETH...');
+      setShowOnrampButton(true);
+    } else {
+      setShowOnrampButton(false);
+    }
+  }, [gasError, isConnected, address]);
 
   // Check for transaction confirmation and show congratulation page
   useEffect(() => {
@@ -203,6 +229,95 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     makePayment();
   };
 
+  // 🆕 ON RAMP: Generate quote for buying Base ETH
+  const generateOnrampQuote = async () => {
+    if (!address) return;
+    
+    try {
+      setIsOnrampLoading(true);
+      console.log('🔄 Generating On Ramp quote for Base ETH...');
+      
+      // Calculate required amount (order + estimated gas fees)
+      const requiredAmount = 0.01 + 0.001; // $0.01 order + $0.001 gas estimate
+      
+      const response = await fetch('http://localhost:3001/api/onramp/quote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          country: 'US',
+          destinationAddress: address,
+          paymentAmount: requiredAmount.toString(),
+          paymentCurrency: 'USD',
+          paymentMethod: 'UNSPECIFIED',
+          purchaseCurrency: 'ETH',
+          purchaseNetwork: 'base',
+          subdivision: 'CA'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backend error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ On Ramp quote generated:', result);
+      
+      setOnrampQuote(result.data);
+      
+      // Open On Ramp popup
+      openOnrampPopup(result.data);
+      
+    } catch (error) {
+      console.error('❌ Error generating On Ramp quote:', error);
+      alert('Failed to generate funding options. Please try again.');
+    } finally {
+      setIsOnrampLoading(false);
+    }
+  };
+
+  // 🆕 ON RAMP: Open popup for buying Base ETH
+  const openOnrampPopup = (quote: OnrampQuoteResponse) => {
+    try {
+      console.log('🪟 Opening On Ramp popup for Base ETH purchase...');
+      
+      const popup = window.open(
+        quote.onrampUrl,
+        'coinbase-onramp',
+        'width=500,height=700,scrollbars=yes,resizable=yes'
+      );
+
+      if (!popup) {
+        throw new Error('Popup blocked by browser');
+      }
+
+      // Listen for popup close
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          console.log('🪟 On Ramp popup closed');
+          // Recheck gas estimation after popup closes
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
+      }, 1000);
+
+      // Timeout after 10 minutes
+      setTimeout(() => {
+        if (!popup.closed) {
+          popup.close();
+          clearInterval(checkClosed);
+        }
+      }, 10 * 60 * 1000);
+
+    } catch (error) {
+      console.error('❌ Error opening On Ramp popup:', error);
+      alert('Failed to open funding options. Please try again.');
+    }
+  };
+
   const getButtonText = () => {
     if (isConnecting) return 'Connecting...';
     if (isEstimatingGas) return 'Estimating fees...';
@@ -228,6 +343,46 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       
       {/* Payment Button Container */}
       <div className={styles.buttonContainer}>
+        {/* 🆕 ON RAMP: Show On Ramp button when gas estimation fails */}
+        {showOnrampButton && (
+          <div style={{ marginBottom: '16px' }}>
+            <button 
+              onClick={generateOnrampQuote}
+              disabled={isOnrampLoading}
+              style={{
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '16px 24px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                width: '100%',
+                transition: 'background-color 0.2s',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#218838';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#28a745';
+              }}
+            >
+              {isOnrampLoading ? 'Generating Quote...' : 'Buy Base ETH for Gas Fees'}
+            </button>
+            <div style={{ 
+              fontSize: '12px', 
+              color: '#666', 
+              textAlign: 'center', 
+              marginTop: '8px',
+              fontStyle: 'italic'
+            }}>
+              Need Base ETH to pay for transaction fees
+            </div>
+          </div>
+        )}
+
         <button 
           onClick={handleButtonClick} 
           disabled={isDisabled} 
@@ -235,8 +390,6 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         >
           {getButtonText()}
         </button>
-        
-
       </div>
     </div>
   );

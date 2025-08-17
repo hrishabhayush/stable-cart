@@ -17,7 +17,7 @@ export interface GiftCardData {
 
 export class GiftCardHandler {
   private isProcessing: boolean = false;
-  private pollingInterval: number | null = null;
+  private pollingInterval: ReturnType<typeof setInterval> | null = null;
   private lastCheckedTimestamp: number = 0;
 
   /**
@@ -286,23 +286,54 @@ export class GiftCardHandler {
     try {
       console.log('🛒 Placing order...');
       
-      // Look for place order button
-      const placeOrderButton = document.querySelector('button[name="place-order"], .place-order, .checkout-button') as HTMLButtonElement;
+      // Use the EXACT selector from the HTML you provided
+      const placeOrderButton = document.querySelector('input[name="placeYourOrder1"]') as HTMLInputElement;
       
-      if (!placeOrderButton) {
-        console.log('⚠️ Place order button not found');
-        return false;
+      if (placeOrderButton) {
+        console.log('✅ Found "Place your order" button with exact selector: input[name="placeYourOrder1"]');
+        placeOrderButton.click();
+        console.log('✅ "Place your order" button clicked successfully!');
+        
+        // Wait for order placement
+        await this.delay(3000);
+        
+        // Check if order was placed successfully
+        const orderConfirmation = document.querySelector('.order-confirmation, .order-success, .thank-you');
+        return !!orderConfirmation;
       }
 
-      // Click the place order button
-      placeOrderButton.click();
-      
-      // Wait for order placement
-      await this.delay(3000);
-      
-      // Check if order was placed successfully
-      const orderConfirmation = document.querySelector('.order-confirmation, .order-success, .thank-you');
-      return !!orderConfirmation;
+      // Fallback selectors if the exact one doesn't work
+      const fallbackSelectors = [
+        '#placeOrder',
+        '[data-testid="SPC_selectPlaceOrder"]',
+        '.place-your-order-button',
+        'input[title="Place your order"]',
+        'input[value="Place your order"]',
+        '#submitOrderButtonId input[type="submit"]'
+      ];
+
+      for (const selector of fallbackSelectors) {
+        try {
+          const button = document.querySelector(selector) as HTMLElement;
+          if (button && button.offsetParent !== null) { // Check if visible
+            console.log('✅ Found "Place your order" button with fallback selector:', selector);
+            button.click();
+            console.log('✅ "Place your order" button clicked successfully!');
+            
+            // Wait for order placement
+            await this.delay(3000);
+            
+            // Check if order was placed successfully
+            const orderConfirmation = document.querySelector('.order-confirmation, .order-success, .thank-you');
+            return !!orderConfirmation;
+          }
+        } catch (error) {
+          console.warn('⚠️ Error with selector:', selector, error);
+        }
+      }
+
+      console.log('❌ "Place your order" button not found');
+      return false;
 
     } catch (error) {
       console.error('❌ Error placing order:', error);

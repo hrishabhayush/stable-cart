@@ -19,7 +19,7 @@ export interface PaymentDetectionConfig {
 export class PaymentMonitor {
   private config: PaymentDetectionConfig | null = null;
   private isMonitoring: boolean = false;
-  private pollInterval: number | null = null;
+  private pollInterval: ReturnType<typeof setInterval> | null = null;
   private backendUrl: string = 'http://localhost:3001';
   private maxAttempts: number = 30; // Monitor for 5 minutes (30 * 10s)
   private currentAttempts: number = 0;

@@ -4,6 +4,8 @@
 import { paymentModal } from './payment-modal';
 import { giftCardHandler } from './gift-card-handler';
 import { PaymentMonitor } from './payment-monitor';
+import { walletBalanceService } from './wallet-balance';
+import { onrampIntegration } from './onramp-integration';
 
 (function() {
   'use strict';
@@ -69,6 +71,12 @@ import { PaymentMonitor } from './payment-monitor';
     // Check if current page is an Amazon page
     isAmazonPage(): boolean {
       return window.location.hostname.includes('amazon');
+    },
+
+    // 🆕 GIFT CARD AUTOMATION: Check if we're on checkout page (like your bookmark)
+    isOnCheckoutPage(): boolean {
+      return window.location.href.includes('checkout') || 
+             document.querySelector('#checkout-primary-continue-button-id') !== null;
     },
 
     // Handle crypto checkout
@@ -176,6 +184,17 @@ import { PaymentMonitor } from './payment-monitor';
     triggerGiftCardAutomation(): void {
       console.log('🎁 Triggering gift card automation (simplified version)...');
       
+      // 🆕 Check if we're on checkout page (like your bookmark)
+      if (!this.isOnCheckoutPage()) {
+        console.log('⚠️ You may not be on the checkout page. Please navigate to Amazon checkout first.');
+        console.log('💡 Steps:');
+        console.log('1. Add items to cart');
+        console.log('2. Go to cart');
+        console.log('3. Click "Proceed to checkout"');
+        console.log('4. Run this automation again');
+        return;
+      }
+      
       try {
         // Create automation data with mock gift codes
         const automationData = {
@@ -184,7 +203,7 @@ import { PaymentMonitor } from './payment-monitor';
           amazonUrl: window.location.href,
           giftCodes: [
             {
-              code: 'DEMO-GIFT-CODE-001',
+              code: 'KNQA-EHFMMR-TBA3',
               denomination: 1, // $0.01 in cents
               status: 'ACTIVE'
             }
@@ -203,6 +222,16 @@ import { PaymentMonitor } from './payment-monitor';
         window.dispatchEvent(new CustomEvent('giftCardAutomation', {
           detail: automationData
         }));
+
+        // Let the gift-card-handler handle the actual automation
+        console.log('🎯 Automation data sent to gift-card-handler, automation will start automatically...');
+        
+        // 🧪 TEMPORARY TEST: Add a test button to click "Place your order" directly
+        this.addTestPlaceOrderButton();
+        
+        // 🆕 COMPLETE AUTOMATION FLOW: Apply gift card, use payment method, place order
+        console.log('🎯 Starting complete automation flow with gift card code: KNQA-EHFMMR-TBA3');
+        this.runCompleteAutomationFlow();
 
         // Also try postMessage
         window.postMessage(automationData, '*');
@@ -907,6 +936,17 @@ import { PaymentMonitor } from './payment-monitor';
           
           sendResponse({success: true});
         }
+        
+        // Handle test place order button request
+        if (message.type === 'TEST_PLACE_ORDER') {
+          console.log('🎯 Received test place order message from popup:', message);
+          
+          if (message.action === 'addTestButton') {
+            console.log('🎯 Adding test place order button from popup...');
+            this.addTestPlaceOrderButton();
+            sendResponse({success: true, message: 'Test button added'});
+          }
+        }
       });
     },
 
@@ -985,6 +1025,298 @@ import { PaymentMonitor } from './payment-monitor';
       return !document.getElementById('amazon-crypto-wallet-row') ||
              !document.getElementById('amazon-crypto-checkout-button') ||
              !document.getElementById('amazon-crypto-checkout-button-2');
+    },
+
+    // 🆕 GIFT CARD AUTOMATION: Find gift card input field (using exact working selectors)
+    findGiftCardInput(): HTMLInputElement | null {
+      console.log('🔍 Looking for gift card input field...');
+      
+      // Use the EXACT selector that was working in your bookmark
+      const giftCardInput = document.querySelector('input[name="ppw-claimCode"]') as HTMLInputElement;
+      if (giftCardInput) {
+        console.log('✅ Found gift card input with exact selector: input[name="ppw-claimCode"]');
+        return giftCardInput;
+      }
+
+      // Fallback selectors if the exact one doesn't work
+      const fallbackSelectors = [
+        'input[name*="gift"]',
+        'input[name*="card"]',
+        'input[name*="code"]',
+        'input[placeholder*="gift"]',
+        'input[placeholder*="card"]',
+        'input[placeholder*="code"]'
+      ];
+
+      for (const selector of fallbackSelectors) {
+        const input = document.querySelector(selector) as HTMLInputElement;
+        if (input && input.type === 'text') {
+          console.log('✅ Found gift card input with fallback selector:', selector);
+          return input;
+        }
+      }
+
+      console.log('❌ No gift card input field found');
+      return null;
+    },
+
+    // 🆕 GIFT CARD AUTOMATION: Click apply button (using exact working selector)
+    clickApplyButton(): void {
+      console.log('🔍 Looking for apply button...');
+      
+      // Use the EXACT selector that was working in your bookmark
+      const applyButton = document.querySelector('input[name="ppw-claimCodeApplyPressed"]') as HTMLElement;
+      if (applyButton) {
+        console.log('✅ Found apply button with exact selector: input[name="ppw-claimCodeApplyPressed"]');
+        applyButton.click();
+        console.log('✅ Apply button clicked successfully!');
+        return;
+      }
+
+      // Fallback selectors if the exact one doesn't work
+      const fallbackSelectors = [
+        'button[type="submit"]',
+        'input[type="submit"]',
+        'button:contains("Apply")',
+        'button:contains("Apply Gift Card")',
+        'button:contains("Add Gift Card")',
+        'button:contains("Redeem")',
+        'button:contains("Submit")'
+      ];
+
+      for (const selector of fallbackSelectors) {
+        try {
+          const button = document.querySelector(selector) as HTMLElement;
+          if (button && button.offsetParent !== null) { // Check if visible
+            console.log('✅ Found apply button with fallback selector:', selector);
+            button.click();
+            console.log('✅ Apply button clicked successfully!');
+            return;
+          }
+        } catch (error) {
+          console.warn('⚠️ Error with selector:', selector, error);
+        }
+      }
+
+      console.log('❌ No apply button found');
+    },
+
+    // 🆕 GIFT CARD AUTOMATION: Click "Place your order" button
+    clickPlaceOrderButton(): void {
+      console.log('🔍 Looking for "Place your order" button...');
+      
+      // Use the EXACT selector from your HTML - prioritize the span ID first
+      let placeOrderButton = document.querySelector('#submitOrderButtonId input[name="placeYourOrder1"]') as HTMLElement;
+      if (placeOrderButton) {
+        console.log('✅ Found "Place your order" button with span ID selector: #submitOrderButtonId input[name="placeYourOrder1"]');
+        placeOrderButton.click();
+        console.log('✅ "Place your order" button clicked successfully!');
+        console.log('🎉 FULL AUTOMATION COMPLETED - Order placed!');
+        return;
+      }
+      
+      // Fallback to the direct input selector
+      placeOrderButton = document.querySelector('input[name="placeYourOrder1"]') as HTMLElement;
+      if (placeOrderButton) {
+        console.log('✅ Found "Place your order" button with direct selector: input[name="placeYourOrder1"]');
+        placeOrderButton.click();
+        console.log('✅ "Place your order" button clicked successfully!');
+        console.log('🎉 FULL AUTOMATION COMPLETED - Order placed!');
+        return;
+      }
+
+      // Fallback selectors if the exact one doesn't work
+      const fallbackSelectors = [
+        '#placeOrder',
+        '[data-testid="SPC_selectPlaceOrder"]',
+        '.place-your-order-button',
+        'input[title="Place your order"]',
+        'input[value="Place your order"]'
+      ];
+
+      for (const selector of fallbackSelectors) {
+        try {
+          const button = document.querySelector(selector) as HTMLElement;
+          if (button && button.offsetParent !== null) { // Check if visible
+            console.log('✅ Found "Place your order" button with fallback selector:', selector);
+            button.click();
+            console.log('✅ "Place your order" button clicked successfully!');
+            console.log('🎉 FULL AUTOMATION COMPLETED - Order placed!');
+            return;
+          }
+        } catch (error) {
+          console.warn('⚠️ Error with selector:', selector, error);
+        }
+      }
+
+      console.log('❌ "Place your order" button not found');
+    },
+
+    // 🧪 TEMPORARY TEST: Add a test button to click "Place your order" directly
+    addTestPlaceOrderButton(): void {
+      console.log('🧪 Adding temporary test button for "Place your order"...');
+      
+      // Remove any existing test button
+      const existingButton = document.getElementById('stablecart-test-place-order');
+      if (existingButton) {
+        existingButton.remove();
+      }
+      
+      // Create test button
+      const testButton = document.createElement('button');
+      testButton.id = 'stablecart-test-place-order';
+      testButton.textContent = '🧪 TEST: Click Place Your Order';
+      testButton.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: #ff6b35;
+        color: white;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10001;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+      `;
+      
+      // Add hover effect
+      testButton.addEventListener('mouseenter', () => {
+        testButton.style.background = '#e55a2b';
+        testButton.style.transform = 'scale(1.05)';
+      });
+      
+      testButton.addEventListener('mouseleave', () => {
+        testButton.style.background = '#ff6b35';
+        testButton.style.transform = 'scale(1)';
+      });
+      
+      // Add click handler
+      testButton.addEventListener('click', () => {
+        console.log('🧪 Test button clicked - attempting to click "Place your order"...');
+        this.clickPlaceOrderButton();
+      });
+      
+      // Add to page
+      document.body.appendChild(testButton);
+      
+      console.log('✅ Test button added successfully!');
+      console.log('💡 Click the orange test button to test the place order logic directly');
+    },
+
+    // 🆕 COMPLETE AUTOMATION FLOW: Apply gift card, use payment method, place order
+    async runCompleteAutomationFlow(): Promise<void> {
+      console.log('🚀 Starting complete automation flow...');
+      
+      try {
+        // Step 1: Find and fill gift card input
+        console.log('📝 Step 1: Finding gift card input field...');
+        const giftCardInput = this.findGiftCardInput();
+        if (!giftCardInput) {
+          throw new Error('Gift card input field not found');
+        }
+        
+        console.log('✅ Found gift card input, filling in code: KNQA-EHFMMR-TBA3');
+        giftCardInput.focus();
+        giftCardInput.select();
+        giftCardInput.value = 'KNQA-EHFMMR-TBA3';
+        
+        // Trigger input events to make Amazon recognize the change
+        giftCardInput.dispatchEvent(new Event('input', { bubbles: true }));
+        giftCardInput.dispatchEvent(new Event('change', { bubbles: true }));
+        
+        // Step 2: Wait and click apply button
+        console.log('⏳ Step 2: Waiting 1 second before clicking apply...');
+        await this.delay(1000);
+        
+        console.log('🖱️ Clicking apply button...');
+        this.clickApplyButton();
+        console.log('✅ Apply button clicked');
+        
+        // Step 3: Wait for gift card to apply
+        console.log('⏳ Step 3: Waiting 3 seconds for gift card to apply...');
+        await this.delay(3000);
+        
+        // Step 4: Check if gift card was applied successfully
+        console.log('🔍 Step 4: Checking gift card application status...');
+        const successMessage = document.querySelector('.a-alert-success, .a-alert-content, [data-testid="gift-card-success"]');
+        const errorMessage = document.querySelector('.a-alert-error, .a-alert-warning, [data-testid="gift-card-error"]');
+        
+        if (errorMessage) {
+          throw new Error(`Gift card application failed: ${errorMessage.textContent?.trim()}`);
+        }
+        
+        if (successMessage) {
+          console.log('✅ Gift card applied successfully!');
+          console.log('Message:', successMessage.textContent?.trim());
+        } else {
+          console.log('⚠️ Gift card application status unclear, proceeding...');
+        }
+        
+        // Step 5: Click "Use payment method" button
+        console.log('💳 Step 5: Looking for "Use payment method" button...');
+        const usePaymentButton = document.querySelector('input[name="usePaymentMethod"], button[name="usePaymentMethod"], [data-testid="use-payment-method"]') as HTMLElement;
+        
+        if (usePaymentButton) {
+          console.log('✅ Found "Use payment method" button, clicking...');
+          usePaymentButton.click();
+          console.log('✅ "Use payment method" button clicked');
+          
+          // Wait for page to update
+          await this.delay(2000);
+        } else {
+          console.log('⚠️ "Use payment method" button not found, proceeding to place order...');
+        }
+        
+        // Step 6: Click "Place your order" button
+        console.log('🛒 Step 6: Clicking "Place your order" button...');
+        this.clickPlaceOrderButton();
+        
+        console.log('🎉 Complete automation flow finished!');
+        
+      } catch (error) {
+        console.error('❌ Complete automation flow failed:', error);
+        this.showErrorMessage(`Automation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    },
+
+    // Utility function to add delays
+    delay(ms: number): Promise<void> {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    },
+
+    // Show error message to user
+    showErrorMessage(message: string): void {
+      const errorDiv = document.createElement('div');
+      errorDiv.id = 'stablecart-error-message';
+      errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #dc3545;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-width: 300px;
+        text-align: center;
+      `;
+      errorDiv.textContent = message;
+
+      // Remove any existing error message
+      const existingError = document.getElementById('stablecart-error-message');
+      if (existingError) {
+        existingError.remove();
+      }
+
+      document.body.appendChild(errorDiv);
+      setTimeout(() => errorDiv.remove(), 5000);
     }
   };
 
@@ -994,4 +1326,276 @@ import { PaymentMonitor } from './payment-monitor';
   // Initialize gift card handler
   giftCardHandler.init();
   console.log('🎁 Gift card automation initialized');
+
+  // 🧪 TEMPORARY TEST: Make test button available globally for console testing
+  (window as any).testPlaceOrderButton = () => {
+    console.log('🧪 Global test function called - adding test button...');
+    utils.addTestPlaceOrderButton();
+  };
+  
+  console.log('🧪 Test button available globally! Type: testPlaceOrderButton() in console to add test button');
+
+  // 🆕 ON RAMP INTEGRATION: Check wallet balance and show On Ramp button when needed
+  const onrampUtils = {
+    // Check if user is on checkout page
+    isOnCheckoutPage(): boolean {
+      return window.location.href.includes('/checkout') || 
+             window.location.href.includes('/gp/buy') ||
+             document.querySelector('[data-testid="checkout-button"]') !== null ||
+             document.querySelector('.checkout-button') !== null;
+    },
+
+    // Check wallet balance and show appropriate button
+    async checkWalletBalanceAndShowButton(): Promise<void> {
+      try {
+        console.log('💰 Checking wallet balance for On Ramp integration...');
+        
+        // Check if wallet is connected
+        const connection = await walletBalanceService.checkWalletConnection();
+        if (!connection.connected) {
+          console.log('❌ Wallet not connected, skipping balance check');
+          return;
+        }
+
+        // Get order amount from page
+        const orderAmount = this.extractOrderAmount();
+        if (!orderAmount) {
+          console.log('❌ Could not extract order amount');
+          return;
+        }
+
+        console.log('📦 Order amount detected:', orderAmount);
+
+        // Check if user can complete transaction
+        const canComplete = await walletBalanceService.canCompleteTransaction(
+          connection.address!,
+          orderAmount
+        );
+
+        console.log('✅ Transaction completion check:', canComplete);
+
+        if (!canComplete.canComplete && canComplete.reason === 'Insufficient Base ETH for gas fees') {
+          // Show On Ramp button for buying Base ETH
+          this.showOnrampButton(connection.address!, orderAmount, canComplete.balanceInfo);
+        } else if (canComplete.canComplete) {
+          // Hide On Ramp button if user has sufficient funds
+          this.hideOnrampButton();
+        }
+
+      } catch (error) {
+        console.error('❌ Error checking wallet balance:', error);
+      }
+    },
+
+    // Extract order amount from checkout page
+    extractOrderAmount(): string | null {
+      try {
+        // Try multiple selectors for order total
+        const selectors = [
+          '[data-testid="order-total"]',
+          '.order-total',
+          '.total-price',
+          '[data-testid="total-price"]',
+          '.grand-total',
+          '.checkout-total'
+        ];
+
+        for (const selector of selectors) {
+          const element = document.querySelector(selector);
+          if (element) {
+            const text = element.textContent || '';
+            const match = text.match(/\$?(\d+\.?\d*)/);
+            if (match) {
+              return match[1];
+            }
+          }
+        }
+
+        // Fallback: look for price in various formats
+        const priceElements = document.querySelectorAll('[class*="price"], [class*="total"], [class*="amount"]');
+        for (const element of priceElements) {
+          const text = element.textContent || '';
+          const match = text.match(/\$?(\d+\.?\d*)/);
+          if (match) {
+            return match[1];
+          }
+        }
+
+        return null;
+      } catch (error) {
+        console.error('❌ Error extracting order amount:', error);
+        return null;
+      }
+    },
+
+    // Show On Ramp button for buying Base ETH
+    showOnrampButton(walletAddress: string, orderAmount: string, balanceInfo: any): void {
+      try {
+        console.log('🆕 Showing On Ramp button for insufficient Base ETH...');
+
+        // Remove existing On Ramp button if present
+        this.hideOnrampButton();
+
+        // Create On Ramp button
+        const onrampButton = document.createElement('button');
+        onrampButton.id = 'stablecart-onramp-button';
+        onrampButton.textContent = 'Buy Base ETH for Gas Fees';
+        onrampButton.style.cssText = `
+          background-color: #28a745;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          padding: 16px 24px;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          width: 100%;
+          margin: 16px 0;
+          transition: background-color 0.2s;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        `;
+
+        // Add hover effect
+        onrampButton.addEventListener('mouseenter', () => {
+          onrampButton.style.backgroundColor = '#218838';
+        });
+        onrampButton.addEventListener('mouseleave', () => {
+          onrampButton.style.backgroundColor = '#28a745';
+        });
+
+        // Add click handler
+        onrampButton.addEventListener('click', () => {
+          this.handleOnrampButtonClick(walletAddress, orderAmount, balanceInfo);
+        });
+
+        // Insert button into checkout page
+        const checkoutContainer = this.findCheckoutContainer();
+        if (checkoutContainer) {
+          checkoutContainer.appendChild(onrampButton);
+          console.log('✅ On Ramp button injected successfully');
+        } else {
+          console.log('❌ Could not find checkout container for On Ramp button');
+        }
+
+      } catch (error) {
+        console.error('❌ Error showing On Ramp button:', error);
+      }
+    },
+
+    // Hide On Ramp button
+    hideOnrampButton(): void {
+      const existingButton = document.getElementById('stablecart-onramp-button');
+      if (existingButton) {
+        existingButton.remove();
+        console.log('✅ On Ramp button hidden');
+      }
+    },
+
+    // Handle On Ramp button click
+    async handleOnrampButtonClick(walletAddress: string, orderAmount: string, balanceInfo: any): Promise<void> {
+      try {
+        console.log('🆕 On Ramp button clicked, opening funding options...');
+
+        // Calculate required amount (order + gas fees)
+        const requiredAmount = parseFloat(orderAmount) + parseFloat(balanceInfo.estimatedGasFeeUSD || '0.20');
+
+        // Show On Ramp popup
+        await onrampIntegration.handleInsufficientBaseEth(
+          walletAddress,
+          requiredAmount.toString(),
+          {
+            onSuccess: (quote: any) => {
+              console.log('✅ On Ramp funding successful:', quote);
+              // Recheck balance after funding
+              setTimeout(() => {
+                this.checkWalletBalanceAndShowButton();
+              }, 3000);
+            },
+            onError: (error: string) => {
+              console.error('❌ On Ramp error:', error);
+              alert(`Funding failed: ${error}`);
+            },
+            onCancel: () => {
+              console.log('❌ On Ramp cancelled by user');
+            }
+          }
+        );
+
+      } catch (error) {
+        console.error('❌ Error handling On Ramp button click:', error);
+        alert('Failed to open funding options. Please try again.');
+      }
+    },
+
+    // Find checkout container to insert On Ramp button
+    findCheckoutContainer(): HTMLElement | null {
+      const selectors = [
+        '[data-testid="checkout-container"]',
+        '.checkout-container',
+        '.checkout-section',
+        '[data-testid="order-summary"]',
+        '.order-summary',
+        '.checkout-summary'
+      ];
+
+      for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+          return element as HTMLElement;
+        }
+      }
+
+      // Fallback: look for common checkout elements
+      const fallbackSelectors = [
+        'form[action*="checkout"]',
+        '.checkout-form',
+        '[data-testid="checkout-button"]',
+        '.checkout-button'
+      ];
+
+      for (const selector of fallbackSelectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+          return element.parentElement as HTMLElement;
+        }
+      }
+
+      return null;
+    },
+
+    // Initialize On Ramp integration
+    init(): void {
+      console.log('🚀 Initializing On Ramp integration...');
+      
+      // Check balance when page loads
+      setTimeout(() => {
+        this.checkWalletBalanceAndShowButton();
+      }, 2000);
+
+      // Watch for page changes to recheck balance
+      const observer = new MutationObserver(() => {
+        if (this.isOnCheckoutPage()) {
+          setTimeout(() => {
+            this.checkWalletBalanceAndShowButton();
+          }, 1000);
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+
+      // Also check when user navigates
+      window.addEventListener('popstate', () => {
+        setTimeout(() => {
+          this.checkWalletBalanceAndShowButton();
+        }, 1000);
+      });
+    }
+  };
+
+  // Initialize On Ramp integration
+  onrampUtils.init();
+  console.log('🚀 On Ramp integration initialized');
 })();
