@@ -62,24 +62,6 @@ Button    UI       Payment  Automation
 - **Backend**: localhost:3001 (local dev)
 - **Extension**: Built and ready for Chrome Web Store
 
-## The Problem We Solved
-
-Crypto payments on Amazon are impossible without our approach. Users want to pay with crypto but don't want to learn new workflows. We made it work by hiding the complexity behind gift cards.
-
-## What Makes Us Different
-
-- **Invisible bridge** Users never see gift card codes
-- **Native experience** Feels like Amazon's own checkout
-- **Real automation** Complete order fulfillment
-- **Multi-wallet** Works with any popular wallet
-
-## Innovation Highlights
-
-**First of its kind** No other solution makes crypto payments on Amazon this seamless
-**Mainstream ready** Designed for regular Amazon shoppers, not crypto experts
-**Invisible technology** Users get the benefits without learning blockchain
-**Real automation** Complete end-to-end fulfillment, not just payment processing
-
 ## Next Steps
 
 - Chrome Web Store submission
