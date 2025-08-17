@@ -3,6 +3,7 @@ export interface PriceData {
     usd: number;
     eth: number;
     ethUsdPrice: number;
+    gasEstimate?: string; // Estimated gas fee in ETH
     lastUpdated: Date;
   }
   
@@ -59,18 +60,20 @@ export interface PriceData {
       return this.priceData;
     }
   
-    // Convert USD amount to ETH
-    async convertUsdToEth(usdAmount: number): Promise<PriceData> {
-      const priceData = await this.getPriceData();
-      
-      const ethAmount = this.usdToEth(usdAmount, priceData.ethUsdPrice);
-      
-      return {
-        ...priceData,
-        usd: usdAmount,
-        eth: ethAmount
-      };
-    }
+      // Convert USD amount to ETH
+  async convertUsdToEth(usdAmount: number): Promise<PriceData> {
+    const priceData = await this.getPriceData();
+    
+    const ethAmount = this.usdToEth(usdAmount, priceData.ethUsdPrice);
+    const gasEstimate = await this.estimateGasFee();
+    
+    return {
+      ...priceData,
+      usd: usdAmount,
+      eth: ethAmount,
+      gasEstimate
+    };
+  }
   
     // Format ETH amount for display
     formatEthAmount(ethAmount: number): string {

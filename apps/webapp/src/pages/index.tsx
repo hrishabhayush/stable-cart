@@ -24,14 +24,6 @@ const Home = () => {
   
   // Get Sepolia merchant address from config
   const MERCHANT_ADDRESS = getMerchantAddress();
-  
-  // Ensure wallet is disconnected when component mounts
-  useEffect(() => {
-    // Disconnect any existing wallet connection on mount
-    if (isConnected) {
-      disconnect();
-    }
-  }, []); // Empty dependency array means this runs only once on mount
 
   // Load price conversion when component mounts or price changes
   useEffect(() => {
@@ -126,6 +118,9 @@ const Home = () => {
   const formatProductName = (title: string) => {
     return title.length > 15 ? title.substring(0, 15) + '...' : title;
   };
+
+  // Debug logging for wallet connection state
+  console.log('Wallet connection state:', { isConnected, address });
 
   return (
     <div className={styles.container}>

@@ -91,3 +91,4 @@ tmp/
 temp/ 
 
 .DS_Store
+.vercel
