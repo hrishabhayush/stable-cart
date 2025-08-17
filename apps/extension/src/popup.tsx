@@ -416,64 +416,36 @@ const CryptoCheckoutPopup: React.FC = () => {
           {connectionStatus}
         </div>
       )} */}
-      {/* Test Place Order Button */}
-      <button 
-        style={{
-          position: 'absolute' as const,
-          bottom: '110px',
-          left: '20px',
-          right: '20px',
-          height: '32px',
-          background: '#10B981',
-          color: '#FFFFFF',
-          border: 'none',
-          borderRadius: '12px',
-          fontSize: '12px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-        onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-          e.currentTarget.style.background = '#059669';
-        }}
-        onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-          e.currentTarget.style.background = '#10B981';
-        }}
-        onClick={handleTestPlaceOrder}
-      >
-        🎯 Test Place Order Button
-      </button>
 
       {/* Test Button */}
       <button 
         style={{
           position: 'absolute' as const,
-          bottom: '70px',
+          bottom: '67px',
           left: '20px',
           right: '20px',
           height: '32px',
-          background: '#FF6B35',
-          color: '#FFFFFF',
+          background: '#FCD34D',
+          color: '#000000',
           border: 'none',
-          borderRadius: '12px',
+          borderRadius: '16px',
           fontSize: '12px',
-          fontWeight: 600,
+          fontWeight: 500,
+          fontFamily: 'Amazon Ember Display',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }}
         onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-          e.currentTarget.style.background = '#E55A2B';
+          e.currentTarget.style.background = '#F59E0B';
         }}
         onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
           e.currentTarget.style.background = '#FF6B35';
         }}
         onClick={handleTestPayment}
       >
-        🧪 Test Gift Card Automation
+        Complete Checkout
       </button>
 
       {/* Proceed to Payment Button */}
