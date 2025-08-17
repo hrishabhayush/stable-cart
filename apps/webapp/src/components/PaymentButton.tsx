@@ -45,6 +45,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   // Transaction state
   const [txHash, setTxHash] = useState<string>('');
   const [isPostVerificationProcessing, setIsPostVerificationProcessing] = useState(false);
+  
+  // Countdown timer state
+  const [countdown, setCountdown] = useState<number>(20);
 
   // Update disabled state based on props and processing state
   useEffect(() => {
@@ -79,6 +82,34 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     }
   }, [isSuccess, hash, onShowCongratulation]);
 
+  // Countdown timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isConfirming) {
+      // Start countdown only when user actually signs the transaction and it's being confirmed
+      setCountdown(20);
+      
+      interval = setInterval(() => {
+        setCountdown(prev => {
+          const newValue = prev <= 1 ? 0 : prev - 1;
+          console.log('Countdown:', prev, '->', newValue);
+          return newValue;
+        });
+      }, 1000);
+    } else if (!isSending && !isConfirming && !isPostVerificationProcessing) {
+      // Reset countdown only when completely done
+      setCountdown(0);
+    }
+    // Don't reset countdown during isConfirming or isPostVerificationProcessing - let it continue
+    
+    // Cleanup interval on unmount or when processing stops
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isSending, isConfirming, isPostVerificationProcessing]);
 
 
   // Check for transaction errors
@@ -214,7 +245,12 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
           {getButtonText()}
         </button>
         
-
+        {/* Estimated Time Text - Only show when countdown is actually running */}
+        {(isSending || isConfirming || isPostVerificationProcessing) && countdown < 20 && (
+          <span className={styles.estimatedTimeText}>
+            Est. {countdown}s
+          </span>
+        )}
       </div>
     </div>
   );

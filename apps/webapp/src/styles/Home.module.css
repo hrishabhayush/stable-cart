@@ -319,7 +319,7 @@
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   position: absolute !important;
-  bottom: 11px !important;
+  bottom: 7px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   box-shadow: none !important;
@@ -334,13 +334,13 @@
 .connectWalletButton:hover {
   background: #F4C800;
   transform: translateX(-50%) translateY(-1px);
-  bottom: 11px !important;
+  bottom: 7px !important;
 }
 
 .connectWalletButton:active {
   background: #E6B800;
   transform: translateX(-50%) translateY(0);
-  bottom: 11px !important;
+  bottom: 7px !important;
 }
 
 .connectWalletButton:disabled {
@@ -348,7 +348,7 @@
   color: #9CA3AF !important;
   cursor: not-allowed !important;
   transform: translateX(-50%) !important;
-  bottom: 11px !important;
+  bottom: 7px !important;
 }
 
 /* Loading state for button */
@@ -586,6 +586,19 @@
   gap: 20px;
 }
 
+/* Estimated Time Text - appears to the right of processing button */
+.estimatedTimeText {
+  font-family: 'Amazon Ember Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.197;
+  color: rgba(0, 0, 0, 0.5); /* 50% opacity */
+  position: absolute;
+  left: calc(50% + 110px); /* Position to the right of the button (189px/2 + 15px gap) */
+  bottom: 11px; /* Same bottom position as the button */
+  white-space: nowrap;
+  pointer-events: none; /* Prevent text from interfering with button clicks */
+}
 
 
 /* Congratulation Page Styles */
