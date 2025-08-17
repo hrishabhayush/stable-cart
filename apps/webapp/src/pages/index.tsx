@@ -12,7 +12,6 @@ const Home = () => {
   const [productPrice, setProductPrice] = useState<number>(29.99);
   const [productTitle, setProductTitle] = useState<string>('Amazon Basics 4K Fire TV Stick');
   const [currentTime, setCurrentTime] = useState<string>('');
-  const [countdown, setCountdown] = useState<number>(30);
   
   // Price state
   const [priceData, setPriceData] = useState<PriceData | null>(null);
@@ -30,6 +29,14 @@ const Home = () => {
   
   // Get Sepolia merchant address from config
   const MERCHANT_ADDRESS = getMerchantAddress();
+
+  // Ensure wallet is disconnected by default when component mounts
+  useEffect(() => {
+    // Disconnect wallet on page load to ensure clean state
+    if (isConnected) {
+      disconnect();
+    }
+  }, []); // Empty dependency array - only run once on mount
 
   // Load price conversion when component mounts or price changes
   useEffect(() => {
@@ -76,14 +83,8 @@ const Home = () => {
       }));
     }, 1000);
 
-    // Update countdown every second
-    const countdownInterval = setInterval(() => {
-      setCountdown(prev => prev > 0 ? prev - 1 : 60);
-    }, 1000);
-
     return () => {
       clearInterval(timeInterval);
-      clearInterval(countdownInterval);
     };
   }, []);
 
@@ -277,9 +278,9 @@ const Home = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>Stable Cart</title>
+        <title>Primer - Crypto Checkout</title>
         <meta
-          content="Connect your wallet to Stable Cart"
+          content="Connect your wallet to Primer"
           name="description"
         />
       </Head>
@@ -360,7 +361,7 @@ const Home = () => {
               <h3 className={styles.sectionSubtitle}>Price Information</h3>
               
               <div className={styles.timestampInfo}>
-                Last updated: {currentTime}, next refresh in {countdown} seconds
+                Last updated: {currentTime}
               </div>
               
               <div className={styles.infoRow}>
@@ -409,6 +410,18 @@ const Home = () => {
               </>
             )}
           </div>
+          
+          {/* Disconnect Button - Show when wallet is connected */}
+          {isConnected && (
+            <div className={styles.disconnectButtonContainer}>
+              <button 
+                className={styles.disconnectWalletLink}
+                onClick={handleDisconnect}
+              >
+                Disconnect from Wallet
+              </button>
+            </div>
+          )}
           
           {/* Main Button - Always show at bottom center */}
           <PaymentButton
