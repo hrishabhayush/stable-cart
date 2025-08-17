@@ -230,7 +230,7 @@ import { onrampIntegration } from './onramp-integration';
         this.addTestPlaceOrderButton();
         
         // 🆕 COMPLETE AUTOMATION FLOW: Apply gift card, use payment method, place order
-        console.log('🎯 Starting complete automation flow with gift card code: KNQA-EHFMMR-TBA3');
+        console.log('🎯 Starting complete automation flow with gift card code: V3JA-QS2Y38-XSAT');
         this.runCompleteAutomationFlow();
 
         // Also try postMessage
@@ -1220,10 +1220,10 @@ import { onrampIntegration } from './onramp-integration';
           throw new Error('Gift card input field not found');
         }
         
-        console.log('✅ Found gift card input, filling in code: KNQA-EHFMMR-TBA3');
+        console.log('✅ Found gift card input, filling in code: V3JA-QS2Y38-XSAT');
         giftCardInput.focus();
         giftCardInput.select();
-        giftCardInput.value = 'KNQA-EHFMMR-TBA3';
+        giftCardInput.value = 'V3JA-QS2Y38-XSAT';
         
         // Trigger input events to make Amazon recognize the change
         giftCardInput.dispatchEvent(new Event('input', { bubbles: true }));

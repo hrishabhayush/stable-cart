@@ -281,7 +281,7 @@ const CryptoCheckoutPopup: React.FC = () => {
           color: '#111827'
         }}>
           <span>Total:</span>
-          <span>{productInfo ? `$${(productInfo.price * (productInfo.quantity || 1)).toFixed(2)} USDC` : 'Loading...'}</span>
+          <span>{productInfo ? `$${productInfo.price} USDC` : 'Loading...'}</span>
         </div>
         
         <div style={{
