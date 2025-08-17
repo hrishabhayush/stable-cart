@@ -47,8 +47,8 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 
   // Update disabled state based on props and processing state
   useEffect(() => {
-    setIsDisabled(disabled || isSending || isConfirming || isEstimatingGas || !gasEstimate);
-  }, [disabled, isSending, isConfirming, isEstimatingGas, gasEstimate]);
+    setIsDisabled(disabled || isSending || isConfirming || (isConnected && isEstimatingGas) || (isConnected && !gasEstimate));
+  }, [disabled, isSending, isConfirming, isEstimatingGas, gasEstimate, isConnected]);
 
   // Update transaction hash when available
   useEffect(() => {
