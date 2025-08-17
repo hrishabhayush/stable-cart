@@ -22,7 +22,7 @@ const CongratulationPage: React.FC<CongratulationPageProps> = ({
 
   const openBlockExplorer = () => {
     // Open Sepolia block explorer for the transaction hash
-    window.open(`https://sepolia.etherscan.io/tx/${transactionHash}`, '_blank');
+    window.open(`https://basescan.org/tx/${transactionHash}`, '_blank');
   };
 
   return (

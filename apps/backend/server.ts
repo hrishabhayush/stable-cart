@@ -10,7 +10,7 @@ import walletTrackingRoutes, { setWalletTrackingService } from './routes/walletT
 import { WalletTrackingService } from './services/WalletTrackingService';
 
 const app: Express = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());

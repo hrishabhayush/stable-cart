@@ -207,11 +207,46 @@ export class GiftCardHandler {
    */
   private async applySingleGiftCode(code: string): Promise<boolean> {
     try {
-      // Look for gift card input field
-      const giftCardInput = document.querySelector('input[name="gift-card-balance"], input[placeholder*="gift"], input[placeholder*="card"]') as HTMLInputElement;
+      // Look for gift card input field with more selectors
+      const giftCardSelectors = [
+        'input[name="gift-card-balance"]',
+        'input[placeholder*="gift"]',
+        'input[placeholder*="card"]',
+        'input[placeholder*="Gift"]',
+        'input[placeholder*="Card"]',
+        'input[name*="gift"]',
+        'input[name*="card"]',
+        'input[id*="gift"]',
+        'input[id*="card"]',
+        'input[data-testid*="gift"]',
+        'input[aria-label*="gift"]',
+        'input[aria-label*="card"]',
+        '.gift-card input',
+        '.giftcard input',
+        '#gift-card input',
+        '#giftcard input',
+        'input[type="text"][placeholder=""]', // Sometimes Amazon uses empty placeholder
+        'input[type="text"]:not([name]):not([id]):not([placeholder])', // Generic text input
+      ];
+      
+      let giftCardInput: HTMLInputElement | null = null;
+      
+      for (const selector of giftCardSelectors) {
+        giftCardInput = document.querySelector(selector) as HTMLInputElement;
+        if (giftCardInput) {
+          console.log(`✅ Found gift card input with selector: ${selector}`);
+          break;
+        }
+      }
       
       if (!giftCardInput) {
-        console.log('⚠️ Gift card input field not found');
+        console.log('⚠️ Gift card input field not found with any selector');
+        console.log('🔍 Available input fields on page:');
+        const allInputs = document.querySelectorAll('input[type="text"], input:not([type])');
+        allInputs.forEach((input, index) => {
+          const element = input as HTMLInputElement;
+          console.log(`  ${index + 1}. Name: "${element.name}", ID: "${element.id}", Placeholder: "${element.placeholder}", Class: "${element.className}"`);
+        });
         return false;
       }
 

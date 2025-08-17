@@ -99,12 +99,19 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       console.log('Transaction confirmed!');
       setIsPostVerificationProcessing(true);
       
+      // Store wallet address for payment monitoring
+      if (address) {
+        localStorage.setItem('stablecart_user_wallet', address);
+        localStorage.setItem('stablecart_payment_completed', 'true');
+        console.log('💾 Stored wallet address for payment monitoring:', address);
+      }
+      
       // Show processing state for 1.5 seconds, then show congratulation page
       setTimeout(() => {
         onShowCongratulation?.(hash);
       }, 1500);
     }
-  }, [isSuccess, hash, onShowCongratulation]);
+  }, [isSuccess, hash, address, onShowCongratulation]);
 
 
 
