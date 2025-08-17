@@ -99,7 +99,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       }, 1000);
     } else if (!isSending && !isConfirming && !isPostVerificationProcessing) {
       // Reset countdown only when completely done
-      setCountdown(0);
+      setCountdown(20);
     }
     // Don't reset countdown during isConfirming or isPostVerificationProcessing - let it continue
     
