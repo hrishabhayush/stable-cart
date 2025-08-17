@@ -1,8 +1,8 @@
 # Primer
 
-**Crypto payments on Amazon that feel as seamless as credit cards**
+**Crypto payments on Amazon that feel as seamless as credit cards!**
 
-A Chrome extension that lets you pay for Amazon orders with crypto. We built an invisible bridge using gift cards so users never see the complexity they just get a smooth checkout experience.
+Primer is a Chrome extension that lets you pay for Amazon orders with crypto. We built an invisible bridge so that users never see the complexity of adding another settlement layer. They just get a smooth checkout experience.
 
 ## How It Works
 
