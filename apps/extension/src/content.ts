@@ -623,6 +623,22 @@ import { paymentModal } from './payment-modal';
         this.handleCryptoCheckout();
       });
 
+      // Add test automation button (right-click for testing)
+      button.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        console.log('🧪 Test automation triggered via right-click');
+        this.testAutomation();
+      });
+
+      // Add test payment detection button (middle-click for testing)
+      button.addEventListener('auxclick', (e) => {
+        if (e.button === 1) { // Middle mouse button
+          e.preventDefault();
+          console.log('🧪 Test payment detection triggered via middle-click');
+          this.testPaymentDetection();
+        }
+      });
+
       return button;
     },
 
@@ -652,6 +668,22 @@ import { paymentModal } from './payment-modal';
       button.addEventListener('click', (e) => {
         e.preventDefault();
         this.handleCryptoCheckout();
+      });
+
+      // Add test automation button (right-click for testing)
+      button.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        console.log('🧪 Test automation triggered via right-click');
+        this.testAutomation();
+      });
+
+      // Add test payment detection button (middle-click for testing)
+      button.addEventListener('auxclick', (e) => {
+        if (e.button === 1) { // Middle mouse button
+          e.preventDefault();
+          console.log('🧪 Test payment detection triggered via middle-click');
+          this.testPaymentDetection();
+        }
       });
 
       return button;
@@ -736,8 +768,16 @@ import { paymentModal } from './payment-modal';
     run(): void {
       if (!this.isAmazonPage()) return;
 
-      // Wait for page to load
+      console.log('🚀 Extension main execution started');
+
+      // Always start payment success listener first (most important)
+      console.log('🔍 Starting payment success listener immediately...');
+      this.startPaymentSuccessListener();
+      console.log('✅ Payment success listener started');
+
+      // Wait for page to load, then inject UI elements
       setTimeout(() => {
+        console.log('⏰ Page load timeout completed, injecting elements...');
         this.injectCryptoWalletOption();
         this.injectCheckoutButton();
         this.injectSecondCheckoutButton();
@@ -807,6 +847,433 @@ import { paymentModal } from './payment-modal';
       return !document.getElementById('amazon-crypto-wallet-row') ||
              !document.getElementById('amazon-crypto-checkout-button') ||
              !document.getElementById('amazon-crypto-checkout-button-2');
+    },
+
+    // Gift Card Automation - Your Bookmark JavaScript
+    async executeGiftCardAutomation(orderId?: string): Promise<boolean> {
+      try {
+        console.log('🎁 Amazon Gift Card Automation Starting...');
+        
+        // Get real gift card codes from backend instead of generating random ones
+        let giftCardCodes: string[] = [];
+        if (orderId && orderId !== 'test-order-123') {
+          try {
+            console.log('🔍 Fetching real gift card codes from backend...');
+            const response = await fetch(`http://localhost:3001/api/checkout-sessions/${orderId}/gift-codes`);
+            if (response.ok) {
+              const data = await response.json();
+              giftCardCodes = data.giftCodes.map((gc: any) => gc.code);
+              console.log(`✅ Retrieved ${giftCardCodes.length} real gift card codes`);
+            } else {
+              console.log('⚠️ Failed to get gift card codes from backend, falling back to test mode');
+            }
+          } catch (error) {
+            console.log('⚠️ Error fetching gift card codes, falling back to test mode:', error);
+          }
+        }
+        
+        // Fallback to test mode if no real codes available
+        if (giftCardCodes.length === 0) {
+          console.log('🧪 Test mode: Using random gift card code');
+          giftCardCodes = [this.generateGiftCardCode()];
+        }
+        
+        const giftCardCode = giftCardCodes[0];
+        console.log(`🎁 Using gift card code: ${giftCardCode}`);
+        
+        const giftCardInput = this.findGiftCardInput();
+        if (!giftCardInput) {
+          console.log('❌ Gift card input not found. Make sure you\'re on checkout page and gift card section is expanded.');
+          return false;
+        }
+        console.log('✅ Found gift card input field');
+        
+        const applyButton = this.findApplyButton();
+        if (!applyButton) {
+          console.log('❌ Apply button not found. Make sure gift card section is expanded.');
+          return false;
+        }
+        console.log('✅ Found apply button');
+        
+        const checkoutButton = this.findCheckoutButton();
+        if (!checkoutButton) {
+          console.log('❌ Checkout button not found. Make sure you\'re on checkout page.');
+          return false;
+        }
+        console.log('✅ Found checkout button');
+        
+        console.log('📝 Filling in gift card code...');
+        giftCardInput.focus();
+        giftCardInput.select();
+        giftCardInput.value = giftCardCode;
+        giftCardInput.dispatchEvent(new Event('input', { bubbles: true }));
+        giftCardInput.dispatchEvent(new Event('change', { bubbles: true }));
+        console.log('✅ Gift card code entered');
+        
+        console.log('⏳ Waiting 1 second before clicking apply...');
+        await this.delay(1000);
+        
+        console.log('🖱️ Clicking apply button...');
+        applyButton.click();
+        console.log('✅ Apply button clicked');
+        
+        console.log('⏳ Waiting 3 seconds for gift card to apply...');
+        await this.delay(3000);
+        
+        console.log('🔍 Checking if gift card was applied...');
+        const successMessage = document.querySelector('.a-alert-success, .a-alert-content, [data-testid="gift-card-success"]');
+        const errorMessage = document.querySelector('.a-alert-error, .a-alert-warning, [data-testid="gift-card-error"]');
+        
+        if (successMessage) {
+          console.log('✅ Gift card applied successfully!');
+          console.log('Message:', successMessage.textContent?.trim());
+        } else if (errorMessage) {
+          console.log('❌ Gift card application failed:');
+          console.log('Error:', errorMessage.textContent?.trim());
+          return false;
+        } else {
+          console.log('⚠️ Gift card application status unclear');
+        }
+        
+        console.log('🛒 Clicking checkout button...');
+        checkoutButton.click();
+        console.log('✅ Checkout button clicked');
+        console.log('🎉 Automation completed!');
+        
+        // Update order status if orderId provided
+        if (orderId && orderId !== 'test-order-123') {
+          await this.updateOrderStatus(orderId, 'FULFILLED');
+        }
+        
+        return true;
+        
+      } catch (error) {
+        console.error('💥 Error during automation:', error);
+        await this.handleAutomationError(error, orderId);
+        return false;
+      }
+    },
+
+    // Generate gift card code (from your bookmark)
+    generateGiftCardCode(): string {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      const generateSegment = (length: number): string => {
+        let result = '';
+        for (let i = 0; i < length; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      };
+
+      const segment1 = generateSegment(4);
+      const segment2 = generateSegment(6);
+      const segment3 = generateSegment(5);
+      return `${segment1}-${segment2}-${segment3}`;
+    },
+
+    // Handle automation errors
+    async handleAutomationError(error: any, orderId?: string): Promise<void> {
+      console.error('💥 Automation error details:', error);
+
+              if (orderId && orderId !== 'test-order-123') {
+          await this.updateOrderStatus(orderId, 'FAILED');
+        }
+
+      // Show user feedback
+      this.showAutomationError(error.message || 'Automation failed');
+    },
+
+    // Update order status in backend
+    async updateOrderStatus(orderId: string, status: string): Promise<void> {
+      try {
+        const response = await fetch(`http://localhost:3001/api/checkout-sessions/${orderId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to update order status: ${response.statusText}`);
+        }
+
+        console.log('✅ Order status updated:', status);
+      } catch (error) {
+        console.error('❌ Failed to update order status:', error);
+      }
+    },
+
+    // Show automation error to user
+    showAutomationError(message: string): void {
+      const errorDiv = document.createElement('div');
+      errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #dc3545;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      `;
+      errorDiv.textContent = `Automation Error: ${message}`;
+
+      document.body.appendChild(errorDiv);
+      setTimeout(() => errorDiv.remove(), 5000);
+    },
+
+    // Utility delay function
+    delay(ms: number): Promise<void> {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    },
+
+    // Test automation (manual trigger for testing)
+    testAutomation(): void {
+      console.log('🧪 Testing gift card automation...');
+      this.executeGiftCardAutomation('test-order-123');
+    },
+
+    // Test function to simulate payment success (for testing automation)
+    testPaymentDetection(): void {
+      console.log('🧪 Testing payment detection...');
+      
+      const testPaymentData = {
+        type: 'PAYMENT_SUCCESS',
+        transactionHash: '0x' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+        timestamp: Date.now(),
+        orderId: `test-order-${Date.now()}`
+      };
+      
+      // Store test payment data in localStorage
+      localStorage.setItem('stablecart_payment_success', JSON.stringify(testPaymentData));
+      console.log('✅ Test payment data stored:', testPaymentData);
+      
+      // Show notification
+      this.showPaymentSuccessNotification(testPaymentData.transactionHash);
+      
+      // Automatically trigger automation after a short delay
+      setTimeout(async () => {
+        console.log('🚀 Auto-triggering automation from test...');
+        await this.handlePaymentSuccess(testPaymentData);
+      }, 1000);
+    },
+
+    // Helper functions for your bookmark JavaScript
+    findGiftCardInput(): HTMLInputElement | null {
+      return document.querySelector('input[name="ppw-claimCode"]');
+    },
+
+    findApplyButton(): HTMLInputElement | null {
+      return document.querySelector('input[name="ppw-claimCodeApplyPressed"]');
+    },
+
+    findCheckoutButton(): HTMLButtonElement | null {
+      return document.querySelector('#checkout-primary-continue-button-id');
+    },
+
+    // Payment Success Listener - Automatically triggers automation
+    startPaymentSuccessListener(): void {
+      console.log('🔍 Starting payment success listener...');
+      
+      // Listen for payment success messages from webapp
+      window.addEventListener('message', (event) => {
+        console.log('📨 Message received:', event.origin, event.data);
+        
+        // Accept messages from any Vercel webapp domain
+        if (!event.origin.includes('vercel.app')) {
+          console.log('⚠️ Message origin not from Vercel, ignoring:', event.origin);
+          return;
+        }
+
+        if (event.data.type === 'PAYMENT_SUCCESS') {
+          console.log('💰 Payment success detected! Transaction:', event.data.transactionHash);
+          this.handlePaymentSuccess(event.data);
+        } else {
+          console.log('⚠️ Message type not PAYMENT_SUCCESS:', event.data.type);
+        }
+      });
+
+      // Listen for storage changes (primary method for cross-tab communication)
+      window.addEventListener('storage', (e) => {
+        console.log('💾 Storage change detected:', e.key, e.newValue);
+        if (e.key === 'stablecart_payment_success') {
+          try {
+            const paymentData = JSON.parse(e.newValue || '{}');
+            if (paymentData.type === 'PAYMENT_SUCCESS' && paymentData.timestamp) {
+              console.log('💰 Payment success detected via storage event!', paymentData);
+              this.handlePaymentSuccess(paymentData);
+            }
+          } catch (error) {
+            console.error('❌ Error parsing storage event data:', error);
+          }
+        }
+      });
+
+      // Also listen for storage changes in the same tab (for direct communication)
+      const originalSetItem = localStorage.setItem;
+      const originalRemoveItem = localStorage.removeItem;
+      
+      // Override localStorage.setItem to catch local changes
+      localStorage.setItem = function(key, value) {
+        if (key === 'stablecart_payment_success') {
+          try {
+            const paymentData = JSON.parse(value as string);
+            if (paymentData.type === 'PAYMENT_SUCCESS' && paymentData.timestamp) {
+              console.log('💰 Payment success detected via local storage change!', paymentData);
+              // Dispatch a custom event to trigger the handler
+              window.dispatchEvent(new CustomEvent('stablecart_payment_success', { detail: paymentData }));
+            }
+          } catch (error) {
+            console.error('❌ Error parsing local storage data:', error);
+          }
+        }
+        return originalSetItem.call(this, key, value);
+      };
+      
+      // Listen for custom payment success events
+      window.addEventListener('stablecart_payment_success', (event: any) => {
+        console.log('💰 Payment success detected via custom event!', event.detail);
+        this.handlePaymentSuccess(event.detail);
+      });
+
+      // Poll for payment success (additional fallback)
+      this.startPaymentPolling();
+    },
+
+    // Handle payment success
+    async handlePaymentSuccess(paymentData: any): Promise<void> {
+      try {
+        console.log('🚀 Processing payment success, starting automation...');
+        
+        // Show success notification
+        this.showPaymentSuccessNotification(paymentData.transactionHash);
+        
+        // Wait a moment for page to be ready
+        await this.delay(2000);
+        
+        // Execute gift card automation
+        const success = await this.executeGiftCardAutomation(paymentData.orderId || 'unknown');
+        
+        if (success) {
+          console.log('🎉 Complete automation flow successful!');
+          this.showSuccessNotification('Gift card automation completed successfully!');
+        } else {
+          console.log('❌ Automation failed, showing error');
+          this.showAutomationError('Gift card automation failed');
+        }
+        
+      } catch (error) {
+        console.error('💥 Error handling payment success:', error);
+        this.showAutomationError('Failed to process payment success');
+      }
+    },
+
+    // Start payment polling (fallback method)
+    startPaymentPolling(): void {
+      console.log('🔄 Starting payment polling every 3 seconds...');
+      
+      // Check for payment success every 3 seconds
+      setInterval(async () => {
+        try {
+          // Method 1: Check local localStorage
+          const paymentData = localStorage.getItem('stablecart_payment_success');
+          if (paymentData) {
+            const parsed = JSON.parse(paymentData);
+            if (parsed.timestamp && Date.now() - parsed.timestamp < 30000) { // Within 30 seconds
+              console.log('💰 Payment success detected via local polling!', parsed);
+              localStorage.removeItem('stablecart_payment_success'); // Clear after use
+              await this.handlePaymentSuccess(parsed);
+              return;
+            }
+          }
+
+          // Method 2: Check sessionStorage
+          const sessionPaymentData = sessionStorage.getItem('stablecart_payment_success');
+          if (sessionPaymentData) {
+            const parsed = JSON.parse(sessionPaymentData);
+            if (parsed.timestamp && Date.now() - parsed.timestamp < 30000) {
+              console.log('💰 Payment success detected via session polling!', parsed);
+              sessionStorage.removeItem('stablecart_payment_success');
+              await this.handlePaymentSuccess(parsed);
+              return;
+            }
+          }
+
+          // Method 3: Check for any recent payment data in multiple storage locations
+          const allKeys = Object.keys(localStorage);
+          const paymentKeys = allKeys.filter(key => key.includes('stablecart') && key.includes('payment'));
+          
+          for (const key of paymentKeys) {
+            try {
+              const data = localStorage.getItem(key);
+              if (data) {
+                const parsed = JSON.parse(data);
+                if (parsed.timestamp && Date.now() - parsed.timestamp < 30000) {
+                  console.log('💰 Payment success detected via key search!', key, parsed);
+                  localStorage.removeItem(key);
+                  await this.handlePaymentSuccess(parsed);
+                  return;
+                }
+              }
+            } catch (e) {
+              console.log('⚠️ Error parsing payment data from key:', key, e);
+            }
+          }
+
+        } catch (error) {
+          console.error('❌ Error in payment polling:', error);
+        }
+      }, 3000); // Check every 3 seconds for faster response
+      
+      console.log('✅ Payment polling started with enhanced detection');
+    },
+
+    // Show payment success notification
+    showPaymentSuccessNotification(txHash: string): void {
+      const successDiv = document.createElement('div');
+      successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-width: 300px;
+      `;
+      successDiv.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 4px;">💰 Payment Successful!</div>
+        <div style="font-size: 12px; opacity: 0.9;">Starting gift card automation...</div>
+        <div style="font-size: 10px; opacity: 0.7; margin-top: 4px;">TX: ${txHash.slice(0, 8)}...${txHash.slice(-6)}</div>
+      `;
+
+      document.body.appendChild(successDiv);
+      setTimeout(() => successDiv.remove(), 8000);
+    },
+
+    // Show success notification
+    showSuccessNotification(message: string): void {
+      const successDiv = document.createElement('div');
+      successDiv.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      `;
+      successDiv.textContent = message;
+
+      document.body.appendChild(successDiv);
+      setTimeout(() => successDiv.remove(), 5000);
     }
   };
 
