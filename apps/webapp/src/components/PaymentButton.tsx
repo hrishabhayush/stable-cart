@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useConnect, useSendTransaction, useWaitForTransactionReceipt, useAccount, useDisconnect, useSwitchChain } from 'wagmi';
+import { useConnect, useSendTransaction, useWaitForTransactionReceipt, useAccount, useDisconnect, useSwitchChain, useEstimateGas } from 'wagmi';
 import { coinbaseWallet } from 'wagmi/connectors';
 import { parseEther } from 'viem';
 import { sepolia } from 'wagmi/chains';
@@ -32,14 +32,21 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const { switchChain } = useSwitchChain();
   const { data: hash, sendTransaction, isPending: isSending } = useSendTransaction();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  
+  // Add gas estimation hook
+  const { data: gasEstimate, isLoading: isEstimatingGas, error: gasError } = useEstimateGas({
+    to: merchantAddress,
+    value: parseEther(amount.toString()),
+    chainId: sepolia.id,
+  });
 
   // Transaction state
   const [txHash, setTxHash] = useState<string>('');
 
-  // Update disabled state based on connection and props
+  // Update disabled state based on props and processing state
   useEffect(() => {
-    setIsDisabled(disabled || (isConnected && !address));
-  }, [disabled, isConnected, address]);
+    setIsDisabled(disabled || isSending || isConfirming || isEstimatingGas || !gasEstimate);
+  }, [disabled, isSending, isConfirming, isEstimatingGas, gasEstimate]);
 
   // Update transaction hash when available
   useEffect(() => {
@@ -93,20 +100,25 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     try {
       setError(null);
       
+      // Check if we have gas estimation
+      if (!gasEstimate) {
+        throw new Error('Unable to estimate gas fees. Please try again or check your wallet connection.');
+      }
+      
       // Convert amount to wei (assuming 18 decimals for ETH)
       const amountInWei = parseEther(amount.toString());
       
       console.log(`Initiating payment of ${amount} ETH`);
       console.log(`Transaction will be sent from: ${address} to: ${merchantAddress}`);
+      console.log(`Estimated gas: ${gasEstimate.toString()}`);
 
-      // ABSOLUTE MINIMUM TRANSACTION - Force simple ETH transfer
-      // Only include the essential fields: to, value
-      // Let wagmi handle everything else automatically
+      // Include gas estimation in transaction
       const txRequest = {
         to: merchantAddress,
         value: amountInWei,
-        chainId: sepolia.id, // Force transaction on Sepolia
-        data: undefined, // Explicitly set to undefined to ensure simple ETH transfer
+        chainId: sepolia.id,
+        gas: gasEstimate, // Add estimated gas
+        data: undefined,
       };
 
       console.log('=== TRANSACTION DETAILS ===');
@@ -116,9 +128,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       console.log('Amount in wei:', amountInWei.toString());
       console.log('Amount in ETH:', amount);
       console.log('Sender address:', address);
+      console.log('Estimated gas:', gasEstimate.toString());
       console.log('Network: Sepolia Testnet');
       console.log('Transaction type: Simple ETH transfer (no contract interaction)');
-      console.log('Data field: undefined (ensures simple ETH transfer)');
       console.log('========================');
 
       await sendTransaction(txRequest);
@@ -161,6 +173,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 
   const getButtonText = () => {
     if (isConnecting) return 'Connecting...';
+    if (isEstimatingGas) return 'Estimating fees...';
     if (isSending || isConfirming) return (
       <span>
         Processing
@@ -168,6 +181,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       </span>
     );
     if (!isConnected) return 'Connect to wallet';
+    if (gasError) return 'Fee estimation failed';
     return 'Place your order';
   };
 

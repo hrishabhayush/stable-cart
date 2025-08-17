@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useConnect, useAccount, useDisconnect } from 'wagmi';
 import { coinbaseWallet } from 'wagmi/connectors';
@@ -22,23 +22,8 @@ const Home = () => {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   
-  // Ref to track if we've already disconnected on mount
-  const hasDisconnectedOnMount = useRef(false);
-  
   // Get Sepolia merchant address from config
   const MERCHANT_ADDRESS = getMerchantAddress();
-  
-  // Ensure wallet is disconnected when component mounts
-  useEffect(() => {
-    // Disconnect any existing wallet connection on mount, but only once
-    if (isConnected && !hasDisconnectedOnMount.current) {
-      // Add a small delay to ensure proper state update
-      setTimeout(() => {
-        disconnect();
-        hasDisconnectedOnMount.current = true;
-      }, 100);
-    }
-  }, [isConnected, disconnect]);
 
   // Load price conversion when component mounts or price changes
   useEffect(() => {
@@ -135,7 +120,7 @@ const Home = () => {
   };
 
   // Debug logging for wallet connection state
-  console.log('Wallet connection state:', { isConnected, address, hasDisconnectedOnMount: hasDisconnectedOnMount.current });
+  console.log('Wallet connection state:', { isConnected, address });
 
   return (
     <div className={styles.container}>

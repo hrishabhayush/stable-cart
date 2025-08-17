@@ -78,7 +78,7 @@
 
 .sectionTitle {
   font-family: 'Amazon Ember Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 16px;
   color: #111827;
   margin: 0 0 12px 0;
@@ -230,7 +230,7 @@
 /* Connection Info Footer */
 .connectionInfo {
   position: absolute;
-  top: 570px; /* Reduced from 590px to account for smaller container */
+  top: 568px; /* Reduced from 590px to account for smaller container */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -307,7 +307,7 @@
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   position: absolute !important;
-  bottom: 15px !important;
+  bottom: 11px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   box-shadow: none !important;
@@ -322,13 +322,13 @@
 .connectWalletButton:hover {
   background: #F4C800;
   transform: translateX(-50%) translateY(-1px);
-  bottom: 15px !important;
+  bottom: 11px !important;
 }
 
 .connectWalletButton:active {
   background: #E6B800;
   transform: translateX(-50%) translateY(0);
-  bottom: 15px !important;
+  bottom: 11px !important;
 }
 
 .connectWalletButton:disabled {
@@ -336,7 +336,7 @@
   color: #9CA3AF !important;
   cursor: not-allowed !important;
   transform: translateX(-50%) !important;
-  bottom: 15px !important;
+  bottom: 11px !important;
 }
 
 /* Loading state for button */
@@ -487,7 +487,7 @@
 /* Disconnect Button Container - Same position as connection info */
 .disconnectButtonContainer {
   position: absolute;
-  top: 570px; /* Same as .connectionInfo */
+  top: 568px; /* Same as .connectionInfo - moved up 10px */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
