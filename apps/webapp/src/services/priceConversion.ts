@@ -65,7 +65,7 @@ export interface PriceData {
     const priceData = await this.getPriceData();
     
     const ethAmount = this.usdToEth(usdAmount, priceData.ethUsdPrice);
-    const gasEstimate = await this.estimateGasFee();
+    const gasEstimate = '~$0.01'; // Fixed gas estimate for display
     
     return {
       ...priceData,

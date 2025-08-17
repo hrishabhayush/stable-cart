@@ -5,7 +5,7 @@
     "moduleResolution": "node",
     "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -19,6 +19,6 @@
     "baseUrl": ".",
     "noEmitOnError": false
   },
-  "include": ["src/server.ts", "src/database.ts"],
-  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/**/__tests__/**/*", "src/routes/**/*"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/__tests__/**/*"]
 }

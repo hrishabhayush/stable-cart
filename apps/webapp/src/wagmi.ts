@@ -12,12 +12,12 @@ export const config = getDefaultConfig({
   appName: 'Amazon Crypto Checkout',
   projectId: 'amazon-crypto-checkout-extension',
   chains: [
-    sepolia, // Prioritize Sepolia for testing
+    base, // Prioritize Base for mainnet transactions
     mainnet,
     polygon,
     optimism,
     arbitrum,
-    base,
+    sepolia, // Keep Sepolia for testing if needed
   ],
   ssr: true,
 });
