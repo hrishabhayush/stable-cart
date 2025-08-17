@@ -30,6 +30,14 @@ const Home = () => {
   // Get Sepolia merchant address from config
   const MERCHANT_ADDRESS = getMerchantAddress();
 
+  // Ensure wallet is disconnected by default when component mounts
+  useEffect(() => {
+    // Disconnect wallet on page load to ensure clean state
+    if (isConnected) {
+      disconnect();
+    }
+  }, []); // Empty dependency array - only run once on mount
+
   // Load price conversion when component mounts or price changes
   useEffect(() => {
     const loadPriceConversion = async () => {
@@ -286,6 +294,18 @@ const Home = () => {
               </>
             )}
           </div>
+          
+          {/* Disconnect Button - Show when wallet is connected */}
+          {isConnected && (
+            <div className={styles.disconnectButtonContainer}>
+              <button 
+                className={styles.disconnectWalletLink}
+                onClick={handleDisconnect}
+              >
+                Disconnect from Wallet
+              </button>
+            </div>
+          )}
           
           {/* Main Button - Always show at bottom center */}
           <PaymentButton
