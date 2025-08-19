@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@base-org/account':
+        specifier: ^2.0.2
+        version: 2.0.2(@types/react@19.1.10)(react@18.3.1)(typescript@5.5.4)
       '@coinbase/wallet-sdk':
         specifier: ^4.3.7
         version: 4.3.7(typescript@5.5.4)
@@ -118,6 +121,12 @@ importers:
 
   apps/webapp:
     dependencies:
+      '@base-org/account':
+        specifier: ^2.0.2
+        version: 2.0.2(@types/react@18.3.23)(react@18.3.1)(typescript@5.5.4)
+      '@base-org/account-ui':
+        specifier: ^1.0.1
+        version: 1.0.1(@base-org/account@2.0.2)(clsx@2.1.1)(preact@10.27.0)(react@18.3.1)
       '@rainbow-me/rainbowkit':
         specifier: ^2.2.8
         version: 2.2.8(@tanstack/react-query@5.85.3)(@types/react@18.3.23)(react-dom@18.3.1)(react@18.3.1)(typescript@5.5.4)(viem@2.33.3)(wagmi@2.16.3)
@@ -510,6 +519,29 @@ packages:
       '@babel/helper-validator-identifier': 7.27.1
     dev: true
 
+  /@base-org/account-ui@1.0.1(@base-org/account@2.0.2)(clsx@2.1.1)(preact@10.27.0)(react@18.3.1):
+    resolution: {integrity: sha512-wWu1PtWies+B5P1v2GoQ9SteaIpXY6AOmWawHSYJZY0hYJA1aqN78u8g0l5A9WJsAe9VXnAkOz/khlbsr/oEIQ==}
+    peerDependencies:
+      '@base-org/account': '*'
+      clsx: '*'
+      preact: '*'
+      react: '*'
+      svelte: '*'
+      vue: '*'
+    peerDependenciesMeta:
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      '@base-org/account': 2.0.2(@types/react@18.3.23)(react@18.3.1)(typescript@5.5.4)
+      clsx: 2.1.1
+      preact: 10.27.0
+      react: 18.3.1
+    dev: false
+
   /@base-org/account@1.1.1(@types/react@18.3.23)(react@18.3.1)(typescript@5.5.4)(use-sync-external-store@1.4.0):
     resolution: {integrity: sha512-IfVJPrDPhHfqXRDb89472hXkpvJuQQR7FDI9isLPHEqSYt/45whIoBxSPgZ0ssTt379VhQo4+87PWI1DoLSfAQ==}
     dependencies:
@@ -534,6 +566,50 @@ packages:
 
   /@base-org/account@1.1.1(@types/react@19.1.10)(react@18.3.1)(typescript@5.5.4)(use-sync-external-store@1.4.0):
     resolution: {integrity: sha512-IfVJPrDPhHfqXRDb89472hXkpvJuQQR7FDI9isLPHEqSYt/45whIoBxSPgZ0ssTt379VhQo4+87PWI1DoLSfAQ==}
+    dependencies:
+      '@noble/hashes': 1.4.0
+      clsx: 1.2.1
+      eventemitter3: 5.0.1
+      idb-keyval: 6.2.1
+      ox: 0.6.9(typescript@5.5.4)
+      preact: 10.24.2
+      viem: 2.33.3(typescript@5.5.4)(zod@3.22.4)
+      zustand: 5.0.3(@types/react@19.1.10)(react@18.3.1)(use-sync-external-store@1.4.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - immer
+      - react
+      - typescript
+      - use-sync-external-store
+      - utf-8-validate
+      - zod
+    dev: false
+
+  /@base-org/account@2.0.2(@types/react@18.3.23)(react@18.3.1)(typescript@5.5.4):
+    resolution: {integrity: sha512-p/mefIVfiKxDYWIoZSp1VeCXmh3hqmaD8ThS7YKMnuxljfM6dOJTxvUpZ/emkXvQQa1nnCA+TRVZt1nCrs5ACA==}
+    dependencies:
+      '@noble/hashes': 1.4.0
+      clsx: 1.2.1
+      eventemitter3: 5.0.1
+      idb-keyval: 6.2.1
+      ox: 0.6.9(typescript@5.5.4)
+      preact: 10.24.2
+      viem: 2.33.3(typescript@5.5.4)(zod@3.22.4)
+      zustand: 5.0.3(@types/react@18.3.23)(react@18.3.1)(use-sync-external-store@1.4.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - immer
+      - react
+      - typescript
+      - use-sync-external-store
+      - utf-8-validate
+      - zod
+    dev: false
+
+  /@base-org/account@2.0.2(@types/react@19.1.10)(react@18.3.1)(typescript@5.5.4):
+    resolution: {integrity: sha512-p/mefIVfiKxDYWIoZSp1VeCXmh3hqmaD8ThS7YKMnuxljfM6dOJTxvUpZ/emkXvQQa1nnCA+TRVZt1nCrs5ACA==}
     dependencies:
       '@noble/hashes': 1.4.0
       clsx: 1.2.1

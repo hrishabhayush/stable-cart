@@ -3,10 +3,10 @@
  * Handles Coinbase On Ramp integration for buying Base ETH
  */
 
-import express from 'express';
+import express, { Router } from 'express';
 import { onrampService } from '../services/OnrampService';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 /**
  * POST /api/onramp/quote

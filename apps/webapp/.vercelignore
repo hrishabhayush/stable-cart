@@ -1,0 +1,9 @@
+../pnpm-lock.yaml
+../../pnpm-lock.yaml
+../../../pnpm-lock.yaml
+**/pnpm-lock.yaml
+**/pnpm-workspace.yaml
+../.npmrc
+../../.npmrc
+node_modules
+.git

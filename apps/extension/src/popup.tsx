@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // For browser extensions, we'll use a hardcoded URL or get it from storage
-const VERCEL_LINK = 'webapp-ten-beige.vercel.app'; // Hardcoded for now
+const VERCEL_LINK = 'localhost:3000'; // Hardcoded for now
 
 interface ProductInfo {
   title: string;
@@ -36,11 +36,11 @@ const CryptoCheckoutPopup: React.FC = () => {
       available: true
     },
     {
-      id: 'metamask',
-      name: 'Metamask Wallet',
-      icon: 'icons/Metamask.svg',
+      id: 'basepay',
+      name: 'BasePay',
+      icon: 'icons/basepay.png',
       iconBg: 'transparent',
-      chain: 'Ethereum Chain',
+      chain: 'Base Chain',
       available: true
     },
     {
@@ -50,7 +50,7 @@ const CryptoCheckoutPopup: React.FC = () => {
       iconBg: 'transparent',
       chain: 'Ethereum Chain',
       available: true
-    }
+    }, 
   ];
 
   useEffect(() => {
@@ -87,6 +87,22 @@ const CryptoCheckoutPopup: React.FC = () => {
       const websiteUrl = `https://${VERCEL_LINK}?price=${price}&title=${encodeURIComponent(productTitle)}`;
       chrome.tabs.create({ url: websiteUrl });
       
+      setConnectionStatus(`Opening payment website with price: $${price.toFixed(2)}`);
+    } else if (selectedWallet === 'basepay') {
+      const price = productInfo?.price || 0;
+      const productTitle = productInfo?.title || 'Amazon Product';
+
+      // Store the price and product info for the website to access
+      chrome.storage.local.set({
+        amazon_product_price: price,
+        amazon_product_title: productTitle,
+        amazon_product_info: productInfo
+      });
+
+      // Open the Vercel website with price as URL parameter and wallet type
+      const websiteUrl = `https://${VERCEL_LINK}?price=${price}&title=${encodeURIComponent(productTitle)}&wallet=basepay`;
+      chrome.tabs.create({ url: websiteUrl });
+
       setConnectionStatus(`Opening payment website with price: $${price.toFixed(2)}`);
     } else {
       setConnectionStatus('Wallet connection not implemented for this wallet yet.');
@@ -363,7 +379,14 @@ const CryptoCheckoutPopup: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <img src={wallet.icon} alt={wallet.name} style={{ width: '32px', height: '32px' }} />
+              <img 
+                src={wallet.icon} 
+                alt={wallet.name} 
+                style={{ 
+                  width: wallet.id === 'basepay' ? '40px' : '32px', 
+                  height: '32px' 
+                }} 
+              />
             </div>
             
             <div style={{ flex: 1 }}>
