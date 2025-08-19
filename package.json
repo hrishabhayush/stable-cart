@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "webpack --mode=development --watch",
-    "build": "pnpm run build:all && webpack --mode=production && pnpm run deploy:webapp",
+    "build": "pnpm run build:all && webpack --mode=production",
+    "build:and:deploy": "pnpm run build:all && webpack --mode=production && pnpm run deploy:webapp",
     "build:all": "pnpm --filter=!stablecart-webapp -r run build",
     "deploy:webapp": "cd apps/webapp && vercel --prod --yes",
     "deploy:webapp:only": "cd apps/webapp && vercel --prod --yes",
@@ -32,6 +33,7 @@
   },
   "packageManager": "pnpm@8.15.0",
   "dependencies": {
+    "@base-org/account": "^2.0.2",
     "@coinbase/wallet-sdk": "^4.3.7",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
